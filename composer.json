@@ -1,0 +1,23 @@
+{
+    "name": "autoframe/thf",
+    "description": "autoframe/thf php framework",
+    "license" : "MIT",
+    "homepage": "https://github.com/autoframe",
+    "require": {
+        "php": ">=5.6",
+        "phpx": "^5.6|^7.0|^8.0"
+    },
+    "authors": [
+        {
+            "name": "Nistor Alexandru Marius",
+            "homepage": "https://autoframe.ro",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "autoframe\\thf\\": "src/"
+        }
+    }
+    
+}
