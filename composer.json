@@ -1,11 +1,19 @@
 {
-    "name": "autoframe/thf",
-    "description": "autoframe/thf php framework",
-    "license" : "MIT",
+    "type": "library",
+    "localDEV": "composer dump-autoload -o",
+    "name": "autoframe/core",
+    "description": "Core Autoframe framework",
+    "license": "MIT",
     "homepage": "https://github.com/autoframe",
     "require": {
-        "php": ">=5.6",
-        "phpx": "^5.6|^7.0|^8.0"
+        "autoframe/mysql-mysqli": "^1.0",
+        "ext-mbstring": "*",
+        "ext-json": "*",
+        "ext-gd": "*",
+        "mhauri/base45": "^0.1.1",
+        "web-auth/cose-lib": "^3.3",
+        "pragmarx/google2fa": "^8.0",
+        "google/recaptcha": "^1.2"
     },
     "authors": [
         {
@@ -16,8 +24,11 @@
     ],
     "autoload": {
         "psr-4": {
-            "autoframe\\thf\\": "src/"
-        }
+            "Autoframe\\Core\\": "src/"
+        },
+        "files": ["src/String/AfrStrHelpers.php"]
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9.5"
     }
-    
 }

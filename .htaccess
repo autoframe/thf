@@ -1,0 +1,25 @@
+AuthType none
+Require all granted
+<FilesMatch "\.(ttf|otf|eot|woff|woff2)$">
+    <IfModule mod_headers.c>
+        #SetEnvIf Origin "http(s)?://(www\.)?(autoframe.ro|cdn.anotherwebsite.com|blahblah.anotherwebsite.com)$" AccessControlAllowOrigin=$0
+        #Header add Access-Control-Allow-Origin %{AccessControlAllowOrigin}e env=AccessControlAllowOrigin
+		Header add Access-Control-Allow-Origin "*"
+		Header add Access-Control-Allow-Headers "origin, x-requested-with, content-type"
+		Header add Access-Control-Allow-Methods "GET"
+		#Header add Access-Control-Allow-Methods "PUT, GET, POST, DELETE, OPTIONS"
+    </IfModule>
+</FilesMatch>
+
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	#RewriteBase /  #nu este necesara daca este in subfolder. Este necesara numai daca este un singur htaccess il radacina superioara
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond $0#%{REQUEST_URI} ([^#]*)#(.*)\1$
+	#RewriteRule ^.*$ %2index.php?requestRouteURI=/$0 [QSA,L]
+	RewriteRule ^.*$ %2index.php [QSA,L]
+</IfModule>
