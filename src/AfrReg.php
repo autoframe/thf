@@ -8,7 +8,7 @@ class AfrReg
 {
 	function __construct()
     {
-        //
+        //aa
     }
 
 }
