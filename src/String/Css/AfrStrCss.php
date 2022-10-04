@@ -3,14 +3,13 @@
 
 namespace Autoframe\Core\String\Css;
 
+use Autoframe\Core\FileSystem\Encode\AfrFileEncode;
 
-use Autoframe\Core\String\Url\AfrStrUrl;
-
-
-class AfrStrCss
+trait AfrStrCss
 {
-    public static function base64EncodeImage(string $sFullImagePath): string
+    use AfrFileEncode;
+    public function base64EncodeImage(string $sFullImagePath): string
     {
-        return AfrStrUrl::base64EncodeFile($sFullImagePath,'image');
+        return $this->base64EncodeFile($sFullImagePath);
     }
 }

@@ -4,7 +4,7 @@
 namespace Autoframe\Core\Object;
 
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Core\Exception\AutoframeException;
 use function constant;
 use function defined;
 
@@ -27,7 +27,7 @@ abstract class AfrObjectAbstractSingletonFactory
     abstract static protected function customConstruct();
 
     /**
-     * @throws Exception
+     * @throws AutoframeException
      */
     static private function factoryConstruct():bool
     {
@@ -74,7 +74,7 @@ abstract class AfrObjectAbstractSingletonFactory
     public static function getInstance(): object
     {
         if(!self::factoryConstruct()){
-            throw new Exception('General exception for ' . __CLASS__ . '::factoryConstruct()');
+            throw new AutoframeException('General exception for ' . __CLASS__ . '::factoryConstruct()');
         }
         /** @var object $sClassName */
         $sClassName = static::getClassName();
@@ -87,12 +87,12 @@ abstract class AfrObjectAbstractSingletonFactory
     /**
      * @param string $sClassName
      * @return string
-     * @throws Exception
+     * @throws AutoframeException
      */
     final public static function setClassName(string $sClassName): string
     {
         if (!$sClassName) {
-            throw new Exception('Expected valid class name parameter for ' . __CLASS__ . '::setClassName');
+            throw new AutoframeException('Expected valid class name parameter for ' . __CLASS__ . '::setClassName');
         }
 
         return static::$sClassName = $sClassName;

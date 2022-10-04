@@ -16,6 +16,7 @@ class AfrStrTest extends TestCase
 
     function escapeDataProvider():array
     {
+        echo __CLASS__ . '->' . __FUNCTION__ . PHP_EOL;
         $aStrings = $this->aTestStrings;
         return [
             [$aStrings,'html',''],
@@ -30,9 +31,6 @@ class AfrStrTest extends TestCase
      */
     public function escape_simple(array $aStrings, string $esc_type, string $charset): void
     {
-        //$k = 'htmlspecialchars';
-        //$s = $this->aTestStrings[$k];
-        //echo "\n".__CLASS__.'->'.__FUNCTION__;
         foreach ($aStrings as $s) {
             AfrStr::setHtmlEncoding($charset);
             $desired = htmlspecialchars($s, AfrStr::$iFlagsHtmlentities, $charset?:AfrStr::getHtmlEncoding(), true);

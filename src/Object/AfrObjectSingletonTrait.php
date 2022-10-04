@@ -3,7 +3,7 @@
 
 namespace Autoframe\Core\Object;
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Core\Exception\AutoframeException;
 use ReflectionClass;
 use ReflectionException;
 use function func_get_args;
@@ -28,19 +28,19 @@ trait AfrObjectSingletonTrait
 
     /**
      * Cloning and unserialization are not permitted for singletons.
-     * @throws Exception
+     * @throws AutoframeException
      */
     protected function __clone()
     {
-        throw new Exception("Cannot clone a singleton");
+        throw new AutoframeException("Cannot clone a singleton");
     }
 
     /**
-     * @throws Exception
+     * @throws AutoframeException
      */
     public function __wakeup()
     {
-        throw new Exception("Cannot unserialize singleton");
+        throw new AutoframeException("Cannot unserialize singleton");
     }
 
 

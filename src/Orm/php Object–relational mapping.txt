@@ -1,0 +1,8 @@
+Doctrine
+Propel
+https://redbeanphp.com/index.php
+https://github.com/gabordemooij/redbean
+
+
+https://en.wikipedia.org/wiki/Doctrine_(PHP)
+https://en.wikipedia.org/wiki/Propel_(PHP)

@@ -3,7 +3,7 @@
 
 namespace Autoframe\Core\String\Html;
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Core\Exception\AutoframeException;
 use Autoframe\Core\String\AfrStr;
 
 use function filter_var;
@@ -41,13 +41,13 @@ class AfrStrHtml
      * @param string $sNewClassName
      * @param string $sQuot
      * @return array|string
-     * @throws Exception
+     * @throws AutoframeException
      */
     public static function addClass($HtmlClass, string $sNewClassName, string $sQuot = '')
     {
         $sNewClassName = self::validateClassName($sNewClassName);
         if (!$sNewClassName) {
-            throw new Exception('Blank $sNewClassName structure supplied!');
+            throw new AutoframeException('Blank $sNewClassName structure supplied!');
         }
 
         if (is_array($HtmlClass)) {
@@ -66,7 +66,7 @@ class AfrStrHtml
                     $classStructure['quot'];
             }
         } else {
-            throw new Exception('Invalid $HtmlClass structure supplied!');
+            throw new AutoframeException('Invalid $HtmlClass structure supplied!');
         }
         return $HtmlClass;
     }
@@ -76,7 +76,7 @@ class AfrStrHtml
      * @param string $sNewClassName
      * @param string $sQuot
      * @return array|string
-     * @throws Exception
+     * @throws AutoframeException
      */
     public static function removeClass($HtmlClass, string $sRemoveClassName, string $sQuot = '')
     {
@@ -98,7 +98,7 @@ class AfrStrHtml
                     $classStructure['quot'];
             }
         } else {
-            throw new Exception('Invalid $HtmlClass structure supplied!');
+            throw new AutoframeException('Invalid $HtmlClass structure supplied!');
         }
         return $HtmlClass;
     }
@@ -143,7 +143,7 @@ class AfrStrHtml
     /**
      * @param string $sNewClassName
      * @return string
-     * @throws Exception
+     * @throws AutoframeException
      */
     public static function validateClassName(string $sNewClassName): string
     {
@@ -152,7 +152,7 @@ class AfrStrHtml
             strlen($sNewClassName) < 1 ||
             is_numeric(substr($sNewClassName, 0, 1))
         ) {
-            throw new Exception('Blank or invalid $sNewClassName supplied!');
+            throw new AutoframeException('Blank or invalid $sNewClassName supplied!');
         }
         return $sNewClassName;
     }

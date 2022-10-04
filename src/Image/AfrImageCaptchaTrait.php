@@ -4,7 +4,7 @@
 namespace Autoframe\Core\Image;
 
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Core\Exception\AutoframeException;
 
 trait AfrImageCaptchaTrait
 {
@@ -42,7 +42,7 @@ trait AfrImageCaptchaTrait
 
         $this->image = $bTrueColor ? imagecreatetruecolor($iWidth, $iHeight) : imagecreate($iWidth, $iHeight);
         if (!$this->image) {
-            throw new Exception('Cannot initialize new GD image stream');
+            throw new AutoframeException('Cannot initialize new GD image stream');
         }
     }
 
@@ -71,7 +71,7 @@ trait AfrImageCaptchaTrait
             }
             return $this->normalizeRGBArray($aRGBMerge);
         }
-        throw new Exception('Expected RGB Array input of 3 int elements ranged 0 to 255');
+        throw new AutoframeException('Expected RGB Array input of 3 int elements ranged 0 to 255');
     }
 
     public function normalizeRGBArray(array $aRGB = []): array
@@ -85,7 +85,7 @@ trait AfrImageCaptchaTrait
             }
             return $aRGB;
         }
-        throw new Exception('Expected RGB Array input of 3 int elements ranged 0 to 255');
+        throw new AutoframeException('Expected RGB Array input of 3 int elements ranged 0 to 255');
 
     }
 
@@ -103,12 +103,12 @@ trait AfrImageCaptchaTrait
     /**
      * @param array $aData
      * @return false|int
-     * @throws Exception
+     * @throws AutoframeException
      */
     protected function imagecolorallocateAData(array $aData)
     {
         if (count($aData) !== 3) {
-            throw new Exception('Expected 3 int RGB!');
+            throw new AutoframeException('Expected 3 int RGB!');
         }
         return imagecolorallocate($this->image, $aData[0], $aData[1], $aData[2]);
     }
