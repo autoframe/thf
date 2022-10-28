@@ -3,80 +3,69 @@
 namespace Autoframe\Core\FileSystem\Traversing;
 
 use Autoframe\Core\FileSystem\Traversing\Exception\FileSystemTraversingException;
-use function is_string;
-use function in_array;
-use function is_callable;
+use Autoframe\Core\Arr\AfrArrSort;
+
+use function count;
+use function array_slice;
 use function print_r;
-use function call_user_func_array;
-use function array_keys;
 
-
+/**
+ * Global static settings that have a higher priority then instance settings
+ * To clear them, run: setAfrDirTraversingSortMethod(null,[],true);
+ */
 trait AfrDirTraversingSort
 {
+    use AfrArrSort;
 
-    //global static settings that have ahigher prioroty then instance settings
-    //to clear them, run: setAfrDirTraversingSortMethod(null,[],true);
-    /** @var string|Closure */
-    private static $GlobalAfrDirTraversingSortFunction;
-    private static array $GlobalAfrDirTraversingSortFunctionArgs = [];
+    //TODO: As of PHP 8.1.0, calling a static method, or accessing a static property directly on a trait is deprecated.
+    // Static methods and properties should only be accessed on a class using the trait.
+    // global settings regardless of instance: ?
+    /** @var null|string|Closure|;SORT_ASC|SORT_DESC */
+    private static $GlobalAfrDirTraversingSortDirectionOrFunction;
+    /** @var null|int bitwhise */
+    private static $GlobalAfrDirTraversingSortFlags;
 
     // instance settings
-    /** @var string|Closure */
-    private $AfrDirTraversingSortFunction = 'ksort';
-    private array $AfrDirTraversingSortFunctionArgs = [SORT_NATURAL];
+    /** @var string|Closure|;SORT_ASC|SORT_DESC */
+    private $AfrDirTraversingSortDirectionOrFunction = SORT_ASC;
+    /** @var int bitwise */
+    private $AfrDirTraversingSortFlags = SORT_NATURAL;
 
     /**
-     * @param $mFunction
+     * @param $mDirectionOrCallableFn
      * @param array $aOptionalArgs
      * @param bool $bGlobal
      * @return void
      * @throws FileSystemTraversingException
      */
-    public function setAfrDirTraversingSortMethod($mFunction, array $aOptionalArgs = [], bool $bGlobal = false): void
+    public function setAfrDirTraversingSortMethod(
+        bool $bGlobal = false,
+             $mDirectionOrCallableFn = SORT_ASC,
+        int  $flags = SORT_NATURAL
+    ): void
     {
-        if ($bGlobal && empty($mFunction) && empty($aOptionalArgs)) {
-            self::$GlobalAfrDirTraversingSortFunction = '';
-            self::$GlobalAfrDirTraversingSortFunctionArgs = [];
+        //global cleanup
+        if ($bGlobal && empty($mDirectionOrCallableFn)) {
+            self::$GlobalAfrDirTraversingSortDirectionOrFunction =
+            self::$GlobalAfrDirTraversingSortFlags = null;
             return;
         }
 
-        $bValid = false;
-        if (is_string($mFunction)) {
-            if (in_array(
-                $mFunction, [
-                    'asort',
-                    'arsort',
-                    'krsort',
-                    'ksort',
-                    'natcasesort',
-                    'natsort',
-                    'rsort',
-                    'shuffle',
-                    'sort',
-                    'array_multisort',
-                    'uasort',
-                    'uksort',
-                    'usort'
-                ]
-            )) {
-                $bValid = true;
-            }
-
-        } elseif (is_callable($mFunction)) {
-            $bValid = true;
-        }
-
-        if ($bValid) {
+        //todo: eventual de folosit ca si clasa stand alone care sa contina ArrXSort; constructor in trait?
+        $aTest = ['a', 'b'];
+        if ($this->arrXSort($aTest, $mDirectionOrCallableFn, false, $flags)) {
             if ($bGlobal) {
-                self::$GlobalAfrDirTraversingSortFunction = $mFunction;
-                self::$GlobalAfrDirTraversingSortFunctionArgs = $aOptionalArgs;
+                self::$GlobalAfrDirTraversingSortDirectionOrFunction = $mDirectionOrCallableFn;
+                self::$GlobalAfrDirTraversingSortFlags = $flags;
+
             } else {
-                $this->AfrDirTraversingSortFunction = $mFunction;
-                $this->AfrDirTraversingSortFunctionArgs = $aOptionalArgs;
+                $this->AfrDirTraversingSortDirectionOrFunction = $mDirectionOrCallableFn;
+                $this->AfrDirTraversingSortFlags = $flags;
             }
         } else {
             throw new FileSystemTraversingException(
-                '$mFunction must be callable string|Closure in ' . __FUNCTION__ . '; ' . print_r($mFunction, true)
+                '$mFunction must be callable.string|Closure|SORT_ASC|SORT_DESC in ' .
+                __FUNCTION__ . '; ' . print_r($mDirectionOrCallableFn, true)
             );
         }
     }
@@ -86,61 +75,48 @@ trait AfrDirTraversingSort
      * @return array|mixed
      * @throws FileSystemTraversingException
      */
-    private function applyAfrDirTraversingSortMethod(array &$arrayToSort)
+    private function applyAfrDirTraversingSortMethod(array &$arrayToSort, bool $bSortByKey)
     {
-        $aParams = [&$arrayToSort];
-        if (self::$GlobalAfrDirTraversingSortFunction && is_callable(self::$GlobalAfrDirTraversingSortFunction)) {
-            $fn = self::$GlobalAfrDirTraversingSortFunction;
-            foreach (self::$GlobalAfrDirTraversingSortFunctionArgs as $mVal) {
-                $aParams[] = $mVal;
-            }
-        } elseif (is_callable($this->AfrDirTraversingSortFunction)) {
-            $fn = $this->AfrDirTraversingSortFunction;
-            foreach ($this->AfrDirTraversingSortFunctionArgs as $mVal) {
-                $aParams[] = $mVal;
-            }
-        } else {
-            throw new FileSystemTraversingException(
-                'Unable to call sort method in: ' . __FUNCTION__ . ' for ' .
-                print_r(
-                    [self::$GlobalAfrDirTraversingSortFunctionArgs, $this->AfrDirTraversingSortFunctionArgs, $aParams],
-                    true
-                ),
+        $aTest = ['a', 'b'];
+        if (self::$GlobalAfrDirTraversingSortDirectionOrFunction) {
+            return $this->arrXSort(
+                $arrayToSort,
+                self::$GlobalAfrDirTraversingSortDirectionOrFunction,
+                $bSortByKey,
+                self::$GlobalAfrDirTraversingSortFlags,
             );
+        } elseif (
+            $this->AfrDirTraversingSortDirectionOrFunction &&
+            $this->arrXSort(
+                $aTest,
+                $this->AfrDirTraversingSortDirectionOrFunction,
+                $bSortByKey,
+                $this->AfrDirTraversingSortFlags,
+            ) !== false
+        ) {
+            return $this->arrXSort(
+                $aTest,
+                $this->AfrDirTraversingSortDirectionOrFunction,
+                $bSortByKey,
+                $this->AfrDirTraversingSortFlags,
+            );
+
         }
-        return $this->applyAfrDirTraversingSortMethodToKeys($fn, $aParams);
+        if (count($arrayToSort) > 3) {
+            $arrayToSort = array_slice($arrayToSort, 3);
+            $arrayToSort[] = '...';
+        }
+        throw new FileSystemTraversingException(
+            'Unable to call sort method in: ' . __FUNCTION__ . ' for ' .
+            print_r([
+                self::$GlobalAfrDirTraversingSortDirectionOrFunction,
+                $this->AfrDirTraversingSortDirectionOrFunction, $bSortByKey,
+                $this->AfrDirTraversingSortFlags,
+                $arrayToSort
+            ], true
+            ),
+        );
+
     }
 
-    /**
-     * @param $fn
-     * @param $aParams
-     * @return array|mixed
-     * @throws FileSystemTraversingException
-     */
-    private function applyAfrDirTraversingSortMethodToKeys($fn, &$aParams)
-    {
-        if (is_string($fn) && in_array($fn, ['krsort', 'ksort', 'uksort'])) {
-            return call_user_func_array($fn, $aParams);
-        } else {
-            //hack to reverse keys
-            $aOriginalToSort = $aParams[0];
-            $aParams[0] = array_keys($aOriginalToSort); //flip the keys
-            $fnReturn = call_user_func_array($fn, $aParams);
-            $aNewMultiLevel = [];
-            foreach ($aParams[0] as $sNewSortedKey) {
-                $aNewMultiLevel[$sNewSortedKey] = $aOriginalToSort[$sNewSortedKey];
-            }
-            $aParams[0] = $aNewMultiLevel;
-            if (is_array($fnReturn)) {
-                foreach ($fnReturn as $mVal) {
-                    if (!is_string($mVal) || !isset($aNewMultiLevel[$sNewSortedKey])) {
-                        //return $aOriginalToSort;
-                        throw new FileSystemTraversingException('Unknown custom sort in ' . __FUNCTION__);
-                    }
-                }
-                return $aNewMultiLevel;
-            }
-            return $fnReturn;
-        }
-    }
 }

@@ -93,8 +93,7 @@ trait AfrDirTraversingGetAllChildrenDirs
                 );
             }
         }
-        $this->applyAfrDirTraversingSortMethod($aDirs);
-        //ksort($aDirs);
+        $this->applyAfrDirTraversingSortMethod($aDirs, true); //ksort($aDirs);
 
         return $aDirs;
     }

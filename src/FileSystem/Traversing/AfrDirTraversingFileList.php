@@ -21,19 +21,18 @@ use function natsort;
 trait AfrDirTraversingFileList
 {
     use AfrDirPath;
+    use AfrDirTraversingSort;
 
     /**
      * @param string $sDirPath
      * @param array $aFilterExtensions
-     * @param string $sSort
      * @return array|false
      * @throws FileSystemException
      * @throws FileSystemTraversingException
      */
     public function getDirFileList(
         string $sDirPath,
-        array  $aFilterExtensions = [],
-        string $sSort = 'natsort'
+        array  $aFilterExtensions = []
     )
     {
         if (!$this->dirPathIsDir($sDirPath)) {
@@ -74,14 +73,9 @@ trait AfrDirTraversingFileList
             }
         }
         closedir($rDir);
-        if (is_string($sSort)) {
-            if (!is_callable($sSort)) {
-                throw new FileSystemTraversingException(
-                    'Invalid array sort function "' . $sSort . '" in ' . __FUNCTION__
-                );
-            }
-            $sSort($aFiles); //natsort($aFiles);
-        }
+
+        $this->applyAfrDirTraversingSortMethod($aFiles, false);
+
         return $aFiles;
     }
 

@@ -5,16 +5,19 @@ namespace Autoframe\Core\Captcha\Classic;
 
 use Autoframe\Core\Captcha\AfrCaptcha;
 use Autoframe\Core\Exception\AutoframeException;
-use Autoframe\Core\Image\AfrImageCaptchaTrait;
+use Autoframe\Core\FileSystem\Exception\FileSystemException;
+use Autoframe\Core\FileSystem\Traversing\Exception\FileSystemTraversingException;
 use Autoframe\Core\Object\AfrObjectSingletonTrait;
 use Autoframe\Core\Session\AfrSessionFactory;
 use Autoframe\Core\Session\AfrSessionPhp;
+use Autoframe\Core\FileSystem\Traversing\AfrDirTraversingFileList;
 
 
 abstract class AfrCaptchaClassicImg extends AfrCaptcha
 {
     use AfrObjectSingletonTrait;
-    use AfrImageCaptchaTrait;
+    use AfrCaptchaClassicTrait;
+    use AfrDirTraversingFileList;
 
     const FONTFACTORSPLIT = '_ff';
     const FONTCACHEFILE = '_cache.json';
@@ -38,7 +41,6 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     protected int $iMaxTextAngle = 17;
     protected int $iFormat = 2;
 
-    protected string $sFontFile = '';
     private array $aFonts = [];
     protected string $sFontsDir = __DIR__ . DIRECTORY_SEPARATOR . 'Fonts' . DIRECTORY_SEPARATOR;
 
@@ -129,14 +131,20 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
         return $aFonts;
     }
 
-    protected function getFontsFromDir(string $sDirPath, array $aExtensions = ['.ttf']): array
+    /**
+     * @param string $sDirPath
+     * @return array
+     * @throws FileSystemException
+     * @throws FileSystemTraversingException
+     */
+    protected function getFontsFromDir(string $sDirPath ): array
     {
         $aFiles = [];
-        if (!is_dir($sDirPath) || count($aExtensions) < 1) {
-            return $aFiles;
-        }
-
         if (!$this->bImproveSpeed || !is_file($sDirPath . self::FONTCACHEFILE)) {
+            $aExtensions = ['.ttf'];
+            /*if (!is_dir($sDirPath)) {
+                return [];
+            }
             $rDir = opendir($sDirPath);  //TODO de facut cu AfrDirPath operatile de directory
             while ($sFileName = readdir($rDir)) {
                 $tf = $sDirPath . $sFileName;
@@ -150,7 +158,8 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
 
                 }
             }
-            closedir($rDir);
+            closedir($rDir);*/
+            $aFiles = $this->getDirFileList($sDirPath,$aExtensions);
             natsort($aFiles);
             file_put_contents($sDirPath . self::FONTCACHEFILE, json_encode($aFiles));
         } else {
@@ -159,10 +168,10 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
         return $aFiles;
     }
 
-    protected function setFont(int $iCodeLength, string $sFontFile = ''): string
+    protected function setCaptchaFont(int $iCodeLength, string $sFontFile = ''): string
     {
         $aFonts = $this->getFonts();
-        $this->sFontFile = $this->sFontsDir . $aFonts[array_rand($aFonts)];
+        $this->setFont($this->sFontsDir . $aFonts[array_rand($aFonts)]);
         if ($sFontFile) {
             foreach ($aFonts as $sFontName) {
                 if (strpos($sFontName, $sFontFile) !== false) {
@@ -231,7 +240,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     public function newCaptchaResource(bool $bExitAfterFlush = true): void
     {
         $sCode = $this->prepareCode();
-        $this->setFont(strlen($sCode));
+        $this->setCaptchaFont(strlen($sCode));
         $this->createImage($sCode);
         $this->flushImage($sCode);
         if ($bExitAfterFlush) {

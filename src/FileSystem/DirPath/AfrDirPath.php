@@ -108,11 +108,7 @@ trait AfrDirPath
      */
     public function dirPathAddFinalSlash(string $sDirPath, string $sReplaceFormat = ''): string
     {
-        $sReplaceFormat = $this->dirPathValidateDetectSlashStyle($sDirPath, $sReplaceFormat);
-        if ($sDirPath && substr($sDirPath, -1, 1) !== $sReplaceFormat) {
-            return $this->dirPathRemoveFinalSlash($sDirPath) . $sReplaceFormat;
-        }
-        return $sDirPath;
+        return $this->dirPathRemoveFinalSlash($sDirPath) . $this->dirPathValidateDetectSlashStyle($sDirPath, $sReplaceFormat);
     }
 
     /**

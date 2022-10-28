@@ -3,11 +3,11 @@
 
 namespace Autoframe\Core\String\Css;
 
-use Autoframe\Core\FileSystem\Encode\AfrFileEncode;
+use Autoframe\Core\FileSystem\Encode\AfrBase64EncodeFile;
 
 trait AfrStrCss
 {
-    use AfrFileEncode;
+    use AfrBase64EncodeFile;
     public function base64EncodeImage(string $sFullImagePath): string
     {
         return $this->base64EncodeFile($sFullImagePath);
