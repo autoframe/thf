@@ -3,11 +3,13 @@
 //https://www.youtube.com/watch?v=9-X_b_fxmRM&ab_channel=ProgramWithGio
 namespace Unit;
 
+use Autoframe\Core\Http\Log\AfrHttpLog;
 use Autoframe\Core\String\AfrStr;
 use PHPUnit\Framework\TestCase;
 
 class AfrStrTest extends TestCase
 {
+    use AfrHttpLog;
     public array $aTestStrings = [
         'lore' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         'htmlspecialchars' => '<>&\'"',
@@ -16,6 +18,7 @@ class AfrStrTest extends TestCase
 
     function escapeDataProvider():array
     {
+        $this->logHttpRequested('');
         echo __CLASS__ . '->' . __FUNCTION__ . PHP_EOL;
         $aStrings = $this->aTestStrings;
         return [

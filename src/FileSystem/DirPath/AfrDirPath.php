@@ -2,7 +2,7 @@
 
 namespace Autoframe\Core\FileSystem\DirPath;
 
-use Autoframe\Core\FileSystem\DirPath\Exception\FileSystemDirPathException;
+use Autoframe\Core\FileSystem\DirPath\Exception\AfrFileSystemDirPathException;
 use Exception as AnyException;
 
 trait AfrDirPath
@@ -150,7 +150,7 @@ trait AfrDirPath
      * @param string $sDirPath
      * @param $context
      * @return false|resource
-     * @throws FileSystemDirPathException
+     * @throws AfrFileSystemDirPathException
      */
     public function openDir(string $sDirPath, $context = null)
     {
@@ -161,7 +161,7 @@ trait AfrDirPath
                 $resource = opendir($sDirPath);
             }
         } catch (AnyException $ex) {
-            throw new FileSystemDirPathException('Unable to open directory: ' . $sDirPath);
+            throw new AfrFileSystemDirPathException('Unable to open directory: ' . $sDirPath);
         }
         return $resource;
     }

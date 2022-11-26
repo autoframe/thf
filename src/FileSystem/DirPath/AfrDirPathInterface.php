@@ -2,7 +2,7 @@
 
 namespace Autoframe\Core\FileSystem\DirPath;
 
-use Autoframe\Core\FileSystem\DirPath\Exception\FileSystemDirPathException;
+use Autoframe\Core\FileSystem\DirPath\Exception\AfrFileSystemDirPathException;
 
 interface AfrDirPathInterface
 {
@@ -76,7 +76,7 @@ interface AfrDirPathInterface
      * @param string $sDirPath
      * @param $context
      * @return false|resource
-     * @throws FileSystemDirPathException
+     * @throws AfrFileSystemDirPathException
      */
     public function openDir(string $sDirPath, $context = null);
 }

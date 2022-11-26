@@ -2,7 +2,7 @@
 
 namespace Autoframe\Core\FileSystem\Traversing;
 
-use Autoframe\Core\FileSystem\Traversing\Exception\FileSystemTraversingException;
+use Autoframe\Core\FileSystem\Traversing\Exception\AfrFileSystemTraversingException;
 use Autoframe\Core\Arr\AfrArrSort;
 
 use function count;
@@ -36,7 +36,7 @@ trait AfrDirTraversingSort
      * @param array $aOptionalArgs
      * @param bool $bGlobal
      * @return void
-     * @throws FileSystemTraversingException
+     * @throws AfrFileSystemTraversingException
      */
     public function setAfrDirTraversingSortMethod(
         bool $bGlobal = false,
@@ -63,7 +63,7 @@ trait AfrDirTraversingSort
                 $this->AfrDirTraversingSortFlags = $flags;
             }
         } else {
-            throw new FileSystemTraversingException(
+            throw new AfrFileSystemTraversingException(
                 '$mFunction must be callable.string|Closure|SORT_ASC|SORT_DESC in ' .
                 __FUNCTION__ . '; ' . print_r($mDirectionOrCallableFn, true)
             );
@@ -73,7 +73,7 @@ trait AfrDirTraversingSort
     /**
      * @param array $arrayToSort
      * @return array|mixed
-     * @throws FileSystemTraversingException
+     * @throws AfrFileSystemTraversingException
      */
     private function applyAfrDirTraversingSortMethod(array &$arrayToSort, bool $bSortByKey)
     {
@@ -106,7 +106,7 @@ trait AfrDirTraversingSort
             $arrayToSort = array_slice($arrayToSort, 3);
             $arrayToSort[] = '...';
         }
-        throw new FileSystemTraversingException(
+        throw new AfrFileSystemTraversingException(
             'Unable to call sort method in: ' . __FUNCTION__ . ' for ' .
             print_r([
                 self::$GlobalAfrDirTraversingSortDirectionOrFunction,

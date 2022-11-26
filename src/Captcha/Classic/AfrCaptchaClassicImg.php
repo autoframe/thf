@@ -5,8 +5,8 @@ namespace Autoframe\Core\Captcha\Classic;
 
 use Autoframe\Core\Captcha\AfrCaptcha;
 use Autoframe\Core\Exception\AutoframeException;
-use Autoframe\Core\FileSystem\Exception\FileSystemException;
-use Autoframe\Core\FileSystem\Traversing\Exception\FileSystemTraversingException;
+use Autoframe\Core\FileSystem\Exception\AfrFileSystemException;
+use Autoframe\Core\FileSystem\Traversing\Exception\AfrFileSystemTraversingException;
 use Autoframe\Core\Object\AfrObjectSingletonTrait;
 use Autoframe\Core\Session\AfrSessionFactory;
 use Autoframe\Core\Session\AfrSessionPhp;
@@ -134,8 +134,8 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     /**
      * @param string $sDirPath
      * @return array
-     * @throws FileSystemException
-     * @throws FileSystemTraversingException
+     * @throws AfrFileSystemException
+     * @throws AfrFileSystemTraversingException
      */
     protected function getFontsFromDir(string $sDirPath ): array
     {

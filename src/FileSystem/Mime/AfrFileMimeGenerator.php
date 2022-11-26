@@ -2,7 +2,7 @@
 
 namespace Autoframe\Core\FileSystem\Mime;
 
-use Autoframe\Core\FileSystem\Mime\Exception\FileSystemMimeException;
+use Autoframe\Core\FileSystem\Mime\Exception\AfrFileSystemMimeException;
 use function file_get_contents;
 use function file_put_contents;
 use function filemtime;
@@ -99,13 +99,13 @@ trait AfrFileMimeGenerator
      * This method reads the file 'mime.types' and updates the traits AfrFileMimeExtensions and AfrFileMimeTypes
      * @param int $iDeltaTs
      * @return int
-     * @throws FileSystemMimeException
+     * @throws AfrFileSystemMimeException
      */
     public function initFileMimeParseMimeTypes(int $iDeltaTs = 60): int
     {
 
         if (!is_file($this->sGeneratorMimeTypesPath)) {
-            throw new FileSystemMimeException('Config file is missing: ' . $this->sGeneratorMimeTypesPath);
+            throw new AfrFileSystemMimeException('Config file is missing: ' . $this->sGeneratorMimeTypesPath);
         }
         $iMimeTypesTs = filemtime($this->sGeneratorMimeTypesPath);
         $bUpToDate = true;
@@ -126,13 +126,13 @@ trait AfrFileMimeGenerator
         );
 
         if (count($aFileMimeExtensions) < 500 || count($aFileMimeTypes) < 500) {
-            throw new FileSystemMimeException('Parse file failed: ' . $this->sGeneratorMimeTypesPath);
+            throw new AfrFileSystemMimeException('Parse file failed: ' . $this->sGeneratorMimeTypesPath);
         }
         if (!$this->initFileMimeParseMimePhp("AfrFileMimeExtensions", $aFileMimeExtensions)) {
-            throw new FileSystemMimeException('Unable to write the file: ' . __DIR__ . '/AfrFileMimeExtensions.php');
+            throw new AfrFileSystemMimeException('Unable to write the file: ' . __DIR__ . '/AfrFileMimeExtensions.php');
         }
         if (!$this->initFileMimeParseMimePhp("AfrFileMimeTypes", $aFileMimeTypes)) {
-            throw new FileSystemMimeException('Unable to write the file: ' . __DIR__ . '/AfrFileMimeTypes.php');
+            throw new AfrFileSystemMimeException('Unable to write the file: ' . __DIR__ . '/AfrFileMimeTypes.php');
         }
 
         return $iMimeTypesTs;

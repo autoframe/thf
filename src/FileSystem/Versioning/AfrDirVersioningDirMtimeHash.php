@@ -3,7 +3,7 @@
 namespace Autoframe\Core\FileSystem\Versioning;
 
 use Autoframe\Core\FileSystem\DirPath\AfrDirPath;
-use Autoframe\Core\FileSystem\Versioning\Exception\FileSystemVersioningException;
+use Autoframe\Core\FileSystem\Versioning\Exception\AfrFileSystemVersioningException;
 
 
 trait AfrDirVersioningDirMtimeHash
@@ -14,7 +14,7 @@ trait AfrDirVersioningDirMtimeHash
      * @param string $sDirPath
      * @param bool $bCanThrowException
      * @return string
-     * @throws FileSystemVersioningException
+     * @throws AfrFileSystemVersioningException
      */
     public function dirVersioningDirMtimeHash(
         string $sDirPath,
@@ -24,7 +24,7 @@ trait AfrDirVersioningDirMtimeHash
         $sDirPath = $this->dirPathRemoveFinalSlash($sDirPath);
         $iTimestamp = (int)($bCanThrowException ? filemtime($sDirPath) : @filemtime($sDirPath));
         if (!$iTimestamp && $bCanThrowException) {
-            throw new FileSystemVersioningException(
+            throw new AfrFileSystemVersioningException(
                 'filemtime ' . __CLASS__ . '->' . __FUNCTION__ . 'failed in for: ' . $sDirPath
             );
         }

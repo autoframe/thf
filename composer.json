@@ -10,10 +10,12 @@
         "ext-mbstring": "*",
         "ext-json": "*",
         "ext-gd": "*",
+        "ext-zlib": "*",
         "mhauri/base45": "^0.1.1",
         "web-auth/cose-lib": "^3.3",
         "pragmarx/google2fa": "^8.0",
-        "google/recaptcha": "^1.2"
+        "google/recaptcha": "^1.2",
+        "ext-curl": "*"
     },
     "authors": [
         {

@@ -3,8 +3,8 @@
 namespace Autoframe\Core\FileSystem\Traversing;
 
 use Autoframe\Core\FileSystem\DirPath\AfrDirPath;
-use Autoframe\Core\FileSystem\Exception\FileSystemException;
-use Autoframe\Core\FileSystem\Traversing\Exception\FileSystemTraversingException;
+use Autoframe\Core\FileSystem\Exception\AfrFileSystemException;
+use Autoframe\Core\FileSystem\Traversing\Exception\AfrFileSystemTraversingException;
 use function ltrim;
 use function strtolower;
 use function readdir;
@@ -27,8 +27,8 @@ trait AfrDirTraversingFileList
      * @param string $sDirPath
      * @param array $aFilterExtensions
      * @return array|false
-     * @throws FileSystemException
-     * @throws FileSystemTraversingException
+     * @throws AfrFileSystemException
+     * @throws AfrFileSystemTraversingException
      */
     public function getDirFileList(
         string $sDirPath,

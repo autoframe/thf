@@ -3,8 +3,8 @@
 namespace Autoframe\Core\FileSystem\Traversing;
 
 use Autoframe\Core\FileSystem\DirPath\AfrDirPath;
-use Autoframe\Core\FileSystem\DirPath\Exception\FileSystemDirPathException;
-use Autoframe\Core\FileSystem\Traversing\Exception\FileSystemTraversingException;
+use Autoframe\Core\FileSystem\DirPath\Exception\AfrFileSystemDirPathException;
+use Autoframe\Core\FileSystem\Traversing\Exception\AfrFileSystemTraversingException;
 
 use function readdir;
 use function closedir;
@@ -23,8 +23,8 @@ trait AfrDirTraversingGetAllChildrenDirs
      * @param string $sDirSeparator
      * @param int $iCurrentLevel
      * @return array|false
-     * @throws FileSystemTraversingException
-     * @throws FileSystemDirPathException
+     * @throws AfrFileSystemTraversingException
+     * @throws AfrFileSystemDirPathException
      */
     public function getAllChildrenDirs(
         string $sDirPath,
@@ -44,7 +44,7 @@ trait AfrDirTraversingGetAllChildrenDirs
 
         if ($iCurrentLevel === 0) {
             if (!$this->dirPathIsDir($sDirPath)) {
-                throw new FileSystemTraversingException(
+                throw new AfrFileSystemTraversingException(
                     'Invalid directory path provided in ' . __CLASS__ . '->' . __FUNCTION__ . ': "' . $sDirPath . '"'
                 );
             }

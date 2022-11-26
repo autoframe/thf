@@ -2,7 +2,7 @@
 
 namespace Autoframe\Core\FileSystem\Encode;
 
-use Autoframe\Core\FileSystem\Encode\Exception\FileSystemEncodeException;
+use Autoframe\Core\FileSystem\Encode\Exception\AfrFileSystemEncodeException;
 use Autoframe\Core\FileSystem\Mime\AfrFileMime;
 //TODO php unit tests
 
@@ -12,7 +12,7 @@ trait AfrBase64EncodeFile
     /**
      * @param string $sFullImagePath
      * @return string
-     * @throws FileSystemEncodeException
+     * @throws AfrFileSystemEncodeException
      * CSS: .logo {background: url("<?php echo base64_encode_image ('img/logo.png','png'); ?>") no-repeat; }
      * <img src="<?php echo base64EncodeFile ('img/logo.png','image'); ?>"/>
      */
@@ -20,7 +20,7 @@ trait AfrBase64EncodeFile
     {
         $sMime = $this->getMimeFromFileName($sFullImagePath);
         if (!$sMime) {
-            throw new FileSystemEncodeException('Blank ' . $sMime . ' for base64 embed: ' . $sFullImagePath);
+            throw new AfrFileSystemEncodeException('Blank ' . $sMime . ' for base64 embed: ' . $sFullImagePath);
         }
         return 'data:' . $sMime. ';base64,' . file_get_contents($sFullImagePath);
     }

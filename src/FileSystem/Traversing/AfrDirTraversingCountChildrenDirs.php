@@ -2,7 +2,7 @@
 
 namespace Autoframe\Core\FileSystem\Traversing;
 
-use Autoframe\Core\FileSystem\Exception\FileSystemException;
+use Autoframe\Core\FileSystem\Exception\AfrFileSystemException;
 
 use function is_array;
 use function count;
@@ -15,8 +15,8 @@ trait AfrDirTraversingCountChildrenDirs
      * @param string $sDirPath
      * @param bool $bCountSymlinksAsDirs
      * @return false|int
-     * @throws Exception\FileSystemTraversingException
-     * @throws FileSystemException
+     * @throws Exception\AfrFileSystemTraversingException
+     * @throws AfrFileSystemException
      */
     public function dirPathCountChildrenDirs(string $sDirPath, bool $bCountSymlinksAsDirs = false)
     {

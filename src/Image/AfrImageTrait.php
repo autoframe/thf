@@ -2,7 +2,7 @@
 
 namespace Autoframe\Core\Image;
 
-use Autoframe\Core\Image\Exception\ImageException;
+use Autoframe\Core\Image\Exception\AfrImageException;
 
 trait AfrImageTrait
 {
@@ -49,13 +49,13 @@ trait AfrImageTrait
      * @param int $iHeight
      * @param bool $bTrueColor
      * @return void
-     * @throws ImageException
+     * @throws AfrImageException
      */
     protected function initImage(int $iWidth, int $iHeight, bool $bTrueColor = true)
     {
         $this->image = $bTrueColor ? imagecreatetruecolor($iWidth, $iHeight) : imagecreate($iWidth, $iHeight);
         if (!$this->image) {
-            throw new ImageException('Cannot initialize new GD image stream');
+            throw new AfrImageException('Cannot initialize new GD image stream');
         }
     }
 
@@ -66,7 +66,7 @@ trait AfrImageTrait
      * @param array $aMergeWith
      * @param bool $sum
      * @return array
-     * @throws ImageException
+     * @throws AfrImageException
      */
     public function generateRandRGB(float $min = 12, float $max = 52, bool $signed = false, array $aMergeWith = [], bool $sum = true): array
     {
@@ -89,7 +89,7 @@ trait AfrImageTrait
      * @param array $aMergeWith
      * @param bool $sum
      * @return array
-     * @throws ImageException
+     * @throws AfrImageException
      */
     public function sumRGBArrays(array $aRGB = [], array $aMergeWith = [], bool $sum = true): array
     {
@@ -100,13 +100,13 @@ trait AfrImageTrait
             }
             return $this->normalizeRGBArray($aRGBMerge);
         }
-        throw new ImageException('Expected RGB Array input of 3 int elements ranged 0 to 255');
+        throw new AfrImageException('Expected RGB Array input of 3 int elements ranged 0 to 255');
     }
 
     /**
      * @param array $aRGB
      * @return array
-     * @throws ImageException
+     * @throws AfrImageException
      */
     public function normalizeRGBArray(array $aRGB = []): array
     {
@@ -119,14 +119,14 @@ trait AfrImageTrait
             }
             return $aRGB;
         }
-        throw new ImageException('Expected RGB Array input of 3 int elements ranged 0 to 255');
+        throw new AfrImageException('Expected RGB Array input of 3 int elements ranged 0 to 255');
     }
 
     /**
      * @param int $min
      * @param int $max
      * @return false|int
-     * @throws ImageException
+     * @throws AfrImageException
      */
     protected function imagecolorallocateRandRGB(int $min = 63, int $max = 191)
     {
@@ -148,12 +148,12 @@ trait AfrImageTrait
     /**
      * @param array $aData
      * @return false|int
-     * @throws ImageException
+     * @throws AfrImageException
      */
     protected function imagecolorallocateAData(array $aData)
     {
         if (count($aData) !== 3) {
-            throw new ImageException('Expected 3 int RGB!');
+            throw new AfrImageException('Expected 3 int RGB!');
         }
         return imagecolorallocate($this->image, $aData[0], $aData[1], $aData[2]);
     }
@@ -194,7 +194,7 @@ trait AfrImageTrait
      * @param string $sFontPathName
      * @param bool $bCheckIfFileExists
      * @return void
-     * @throws ImageException
+     * @throws AfrImageException
      */
     protected function setFont(string $sFontPathName, bool $bCheckIfFileExists = false): void
     {
@@ -203,7 +203,7 @@ trait AfrImageTrait
                 !is_file($sFontPathName) &&
                 !is_file(getenv('GDFONTPATH').DIRECTORY_SEPARATOR.$sFontPathName)
             ){
-                throw new ImageException('The following font file was nat found: '.$sFontPathName);
+                throw new AfrImageException('The following font file was nat found: '.$sFontPathName);
             }
         }
         $this->sFontFile = $sFontPathName;

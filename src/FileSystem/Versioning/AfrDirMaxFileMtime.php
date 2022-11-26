@@ -3,8 +3,8 @@
 namespace Autoframe\Core\FileSystem\Versioning;
 
 use Autoframe\Core\FileSystem\DirPath\AfrDirPath;
-use Autoframe\Core\FileSystem\DirPath\Exception\FileSystemDirPathException;
-use Autoframe\Core\FileSystem\Versioning\Exception\FileSystemVersioningException;
+use Autoframe\Core\FileSystem\DirPath\Exception\AfrFileSystemDirPathException;
+use Autoframe\Core\FileSystem\Versioning\Exception\AfrFileSystemVersioningException;
 
 use function is_array;
 use function is_string;
@@ -27,8 +27,8 @@ trait AfrDirMaxFileMtime
      * @param bool $bGetTsFromDirs
      * @param bool $bFollowSymlinks
      * @return int
-     * @throws FileSystemVersioningException
-     * @throws FileSystemDirPathException
+     * @throws AfrFileSystemVersioningException
+     * @throws AfrFileSystemDirPathException
      */
     public function getDirMaxFileMtime(
         $strOrArrPaths,
@@ -51,7 +51,7 @@ trait AfrDirMaxFileMtime
             }
         } elseif (is_string($strOrArrPaths)) {
             if (strlen($strOrArrPaths) < 1 || $this->getDirPathIsDirAlias($strOrArrPaths)) {
-                throw new FileSystemVersioningException(
+                throw new AfrFileSystemVersioningException(
                     'Invalid string "' . $strOrArrPaths . '" provided for ' .
                     __CLASS__ . '->' . __FUNCTION__
                 );
@@ -99,7 +99,7 @@ trait AfrDirMaxFileMtime
             }
 
         } else {
-            throw new FileSystemVersioningException(
+            throw new AfrFileSystemVersioningException(
                 'Expected string|array as parameter 1 but yoy have provided"' .
                 gettype($strOrArrPaths) . '" in ' .
                 __CLASS__ . '->' . __FUNCTION__

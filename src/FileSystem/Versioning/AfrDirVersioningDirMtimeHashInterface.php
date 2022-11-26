@@ -2,7 +2,7 @@
 
 namespace Autoframe\Core\FileSystem\Versioning;
 
-use Autoframe\Core\FileSystem\Versioning\Exception\FileSystemVersioningException;
+use Autoframe\Core\FileSystem\Versioning\Exception\AfrFileSystemVersioningException;
 
 interface AfrDirVersioningDirMtimeHashInterface
 {
@@ -10,7 +10,7 @@ interface AfrDirVersioningDirMtimeHashInterface
      * @param string $sDirPath
      * @param bool $bCanThrowException
      * @return string
-     * @throws FileSystemVersioningException
+     * @throws AfrFileSystemVersioningException
      */
     public function dirVersioningDirMtimeHash(string $sDirPath, bool $bCanThrowException): string;
 }

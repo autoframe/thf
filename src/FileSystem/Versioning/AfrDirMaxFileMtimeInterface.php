@@ -2,8 +2,8 @@
 
 namespace Autoframe\Core\FileSystem\Versioning;
 
-use Autoframe\Core\FileSystem\DirPath\Exception\FileSystemDirPathException;
-use Autoframe\Core\FileSystem\Versioning\Exception\FileSystemVersioningException;
+use Autoframe\Core\FileSystem\DirPath\Exception\AfrFileSystemDirPathException;
+use Autoframe\Core\FileSystem\Versioning\Exception\AfrFileSystemVersioningException;
 
 interface AfrDirMaxFileMtimeInterface
 {
@@ -13,8 +13,8 @@ interface AfrDirMaxFileMtimeInterface
      * @param bool $bGetTsFromDirs
      * @param bool $bFollowSymlinks
      * @return int
-     * @throws FileSystemVersioningException
-     * @throws FileSystemDirPathException
+     * @throws AfrFileSystemVersioningException
+     * @throws AfrFileSystemDirPathException
      */
     public function getDirMaxFileMtime($strOrArrPaths, int $iMaxSubDirs = 1, bool $bGetTsFromDirs = false, bool $bFollowSymlinks = false): int;
 }

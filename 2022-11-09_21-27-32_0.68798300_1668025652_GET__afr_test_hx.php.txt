@@ -1,0 +1,36 @@
+Array
+(
+    [php_sapi_name] => cgi-fcgi
+    [REQUEST_METHOD] => GET
+    [headers] => 
+    [superglobals] => Array
+        (
+            [$_GET] => Array
+                (
+                )
+
+            [$_POST] => Array
+                (
+                )
+
+            [$_COOKIE] => Array
+                (
+                    [AFRSSIDY] => -j1JO,IXnCfc8hzFoiENvoZJvI
+                )
+
+            [$_FILES] => Array
+                (
+                )
+
+            [$_REQUEST] => Array
+                (
+                )
+
+            [$_SERVER] => 
+            [$_SESSION] => 
+            [$_ENV] => 
+            [$GLOBALS] => 
+        )
+
+    [body] => 
+)
