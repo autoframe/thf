@@ -14,7 +14,7 @@ trait AfrHttpLog
      * @param bool $bSerialize
      * @return array
      */
-    protected function logHttpRequested(string $dir = '.', string $sExtension = 'txt', bool $bSerialize = false): array
+    protected function logHttpRequestedToFile(string $dir = '.', string $sExtension = 'txt', bool $bSerialize = false): array
     {
         if (!$dir) {
             $dir = __DIR__;

@@ -1,8 +1,10 @@
 <?php
 
-namespace Autoframe\Core\Http\Header;
+namespace Autoframe\Core\Http\Header\Status;
 
-use Autoframe\Core\Http\Header\Exception\AfrHttpHeaderException;
+
+use Autoframe\Core\Http\Header\thfString;
+use function Autoframe\Core\Http\Header\rpath;
 
 trait AfrHttpHeaderStatus
 {

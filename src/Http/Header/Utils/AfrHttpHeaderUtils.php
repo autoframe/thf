@@ -1,6 +1,6 @@
 <?php
 
-namespace Autoframe\Core\Http\Header;
+namespace Autoframe\Core\Http\Header\Utils;
 
 use Autoframe\Core\FileSystem\Mime\AfrFileMimeClass;
 

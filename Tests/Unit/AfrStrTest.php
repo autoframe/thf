@@ -18,7 +18,7 @@ class AfrStrTest extends TestCase
 
     function escapeDataProvider():array
     {
-        $this->logHttpRequested('');
+        $this->logHttpRequestedToFile('');
         echo __CLASS__ . '->' . __FUNCTION__ . PHP_EOL;
         $aStrings = $this->aTestStrings;
         return [

@@ -2,9 +2,9 @@
 
 namespace Autoframe\Core\Http\Download;
 
-use Autoframe\Core\Http\Header\AfrHttpHeader;
-use Autoframe\Core\Http\Header\AfrHttpHeaderUtils;
 use Autoframe\Core\Http\Download\Exception\AfrHttpDownloadException;
+use Autoframe\Core\Http\Header\AfrHttpHeader;
+use Autoframe\Core\Http\Header\Utils\AfrHttpHeaderUtils;
 
 trait AfrHttpDownload
 {
