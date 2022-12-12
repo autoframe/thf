@@ -3,7 +3,7 @@
 
 namespace Autoframe\Core\String\Url;
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Core\Exception\AutoframeException;
 use function parse_url;
 use function parse_str;
 use function rtrim;
@@ -47,14 +47,14 @@ class AfrStrUrl
      */
     public static function base64url_decode(string $data)
     {
-        return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+        return base64_decode( strtr( $data, '-_', '+/') . str_repeat('=', 3 - ( 3 + strlen( $data )) % 4 ));
     }
 
     /**
      * @param string $sFullImagePath
      * @param string $fileType
      * @return string
-     * @throws Exception
+     * @throws AutoframeException
      * CSS: .logo {background: url("<?php echo base64_encode_image ('img/logo.png','png'); ?>") no-repeat; }
      * <img src="<?php echo base64EncodeFile ('img/logo.png','image'); ?>"/>
      */
@@ -63,7 +63,7 @@ class AfrStrUrl
         $filetype = pathinfo($sFullImagePath)['extension'];
         $binary = file_get_contents($sFullImagePath);
         if (!$binary) {
-            throw new Exception('Blank '.$fileType.' for base64 embed: ' . $sFullImagePath);
+            throw new AutoframeException('Blank '.$fileType.' for base64 embed: ' . $sFullImagePath);
         }
         return 'data:' . $fileType . '/' . $filetype . ';base64,' . base64_encode($binary);
     }

@@ -3,7 +3,7 @@
 
 namespace Autoframe\Core\Img;
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Core\Exception\AutoframeException;
 
 trait InstanceWH
 {
@@ -45,7 +45,7 @@ trait InstanceWH
         if (isset($this->iImgHeight)) {
             return $this->iImgHeight;
         }
-        throw new Exception('ImgHeight is not set');
+        throw new AutoframeException('ImgHeight is not set');
     }
 
     function setImgWidth(int $iImgWidth)
@@ -58,7 +58,7 @@ trait InstanceWH
         if (isset($this->iImgWidth)) {
             return $this->iImgWidth;
         }
-        throw new Exception('ImgWidth is not set');
+        throw new AutoframeException('ImgWidth is not set');
     }
 
 }

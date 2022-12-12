@@ -34,7 +34,7 @@ trait AfrObjectInvoker
             $r = call_user_func_array($fn, $params); // Returns the return value of the callback, or FALSE on error.
             //var_dump($r);
             if ($bForceBoolReturn && !$r && $r !== false) {
-                $r = true; //fix no blank return for functions to avoid 404
+                $r = true; //fix no blank return for functions to avoid 404 in router
             }
             return $r;
         } // If not, check the existence of special parameters

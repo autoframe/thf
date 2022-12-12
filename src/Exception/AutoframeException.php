@@ -2,11 +2,11 @@
 
 
 namespace Autoframe\Core\Exception;
-use \Exception as DefaultException;
+use Exception;
 
 
 
-class Exception extends DefaultException
+class AutoframeException extends Exception
 {
 
     // Redefine the exception so message isn't optional
