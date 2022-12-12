@@ -10,6 +10,15 @@ trait AfrHttpHeaderFormatters
 {
 
     /**
+     * @param string $sHeaders raw headers
+     * @return array
+     */
+    protected function formatHttpRawHeadersToArr(string $sHeaders): array
+    {
+        return (array)explode("\n", str_replace("\r", '', $sHeaders));
+    }
+
+    /**
      * @param $mHeaders
      * @return array
      * @throws AfrHttpHeaderFormattersException
@@ -18,8 +27,7 @@ trait AfrHttpHeaderFormatters
     {
         $aHeaders = [];
         if (is_string($mHeaders) && strlen($mHeaders)) {
-            $mHeaders = str_replace("\r", '', $mHeaders);
-            $mHeaders = explode("\n", $mHeaders);
+            $mHeaders = $this->formatHttpRawHeadersToArr($mHeaders);
         }
         if (is_array($mHeaders)) {
             foreach ($mHeaders as $mKey => $sVal) {
@@ -50,8 +58,7 @@ trait AfrHttpHeaderFormatters
     {
         $aHeaders = [];
         if (is_string($mHeaders) && strlen($mHeaders)) {
-            $mHeaders = str_replace("\r", '', $mHeaders);
-            $mHeaders = explode("\n", $mHeaders);
+            $mHeaders = $this->formatHttpRawHeadersToArr($mHeaders);
         }
         if (is_array($mHeaders)) {
             foreach ($mHeaders as $mKey => $sVal) {

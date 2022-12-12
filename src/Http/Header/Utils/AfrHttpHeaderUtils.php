@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Autoframe\Core\Http\Header\Utils;
 
@@ -162,7 +163,7 @@ trait AfrHttpHeaderUtils
             if ($sCharset) {
                 $sContentType .= '; charset=' . $sCharset;
             } elseif ($bAutodetectEncoding) {
-                $handle = @fopen($sFileNameOrPath, 'r');
+                $handle = fopen($sFileNameOrPath, 'r');
                 if ($handle) {
                     $sBuffer = fgets($handle, 1024 * 8);
                     fclose($handle);
@@ -209,7 +210,10 @@ trait AfrHttpHeaderUtils
     {
         $iFileSize = $iFileSize === -1 ? filesize($sFullFilePath) : $iFileSize;
         $iFileMtime = $iFileMtime === -1 ? filemtime($sFullFilePath) : $iFileMtime;
-        $eTag = dechex(crc32($iFileSize)) . $sA . dechex(crc32($sFullFilePath)) . $sB . dechex(crc32($iFileMtime));
+        $eTag =
+            dechex(crc32((string)$iFileSize)) . $sA .
+            dechex(crc32($sFullFilePath)) . $sB .
+            dechex(crc32((string)$iFileMtime));
         if ($bSendHeader) {
             header('ETag: "' . $eTag . '"');
         }

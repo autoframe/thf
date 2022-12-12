@@ -24,36 +24,6 @@ trait AfrHttpCurlSimpleMethods
 //        'Connection: keep-alive',
     ];
 
-    /**
-     * @param array $aSetNew
-     * @return array
-     */
-    private function getCurlSimpleDefaultHeaders(array $aSetNew = []): array
-    {
-        if ($aSetNew) {
-            $this->aCurlSimpleDefaultHeaders = $aSetNew;
-        }
-        return $this->aCurlSimpleDefaultHeaders;
-    }
-
-    /**
-     * @param array $aHeaders
-     * @return array
-     * @throws AfrHttpHeaderFormattersException
-     */
-    private function prepareCurlOrganizedHeaders(array $aHeaders): array
-    {
-        $aOrganizedHeaders = $this->formatMixedHeadersInputToKeyArray($this->getCurlSimpleDefaultHeaders());
-        foreach ($this->formatMixedHeadersInputToKeyArray($aHeaders) as $sHeaderKey => $sHeaderVal) {
-            if (strlen($sHeaderVal)) {
-                $aOrganizedHeaders[$sHeaderKey] = $sHeaderVal;
-            } elseif (isset($aOrganizedHeaders[$sHeaderKey])) {
-                unset($aOrganizedHeaders[$sHeaderKey]);
-            }
-        }
-        return $aOrganizedHeaders;
-    }
-
 
     /**
      * https://www.php.net/manual/en/function.curl-setopt.php
@@ -86,10 +56,70 @@ trait AfrHttpCurlSimpleMethods
 
 
     /**
+     * @param $mixed
+     * @return void
+     */
+    private function oldPrea($mixed): void
+    {
+        echo '<pre>' . print_r($this->oldH($mixed), true) . '</pre>';
+    }
+
+    /**
+     * @param $str
+     * @param string $enc
+     * @return mixed|string
+     */
+    private function oldH($str, string $enc = 'UTF-8')
+    {
+        if (is_array($str)) {
+            foreach ($str as $key => &$val) {
+                $val = $this->oldH($val);
+            }
+        } elseif (is_string($str)) {
+            $str = htmlentities($str, ENT_QUOTES, $enc);
+        }
+        return $str;
+    }
+
+
+
+    /**
      * @param array $aSetNew
      * @return array
      */
-    private function getCurlSimpleDefaultOptions(array $aSetNew = []): array
+    private function getCurlSimpleDefaultHeaders(array $aSetNew = []): array
+    {
+        if ($aSetNew) {
+            $this->aCurlSimpleDefaultHeaders = $aSetNew;
+        }
+        return $this->aCurlSimpleDefaultHeaders;
+    }
+
+    /**
+     * @param array $aHeaders
+     * @return array
+     * @throws AfrHttpHeaderFormattersException
+     */
+    private function prepareCurlOrganizedHeaders(array $aHeaders): array
+    {
+        $aOrganizedHeaders = $this->formatMixedHeadersInputToKeyArray($this->getCurlSimpleDefaultHeaders());
+        foreach ($this->formatMixedHeadersInputToKeyArray($aHeaders) as $sHeaderKey => $sHeaderVal) {
+            if (strlen($sHeaderVal)) {
+                $aOrganizedHeaders[$sHeaderKey] = $sHeaderVal;
+            } elseif (isset($aOrganizedHeaders[$sHeaderKey])) {
+                unset($aOrganizedHeaders[$sHeaderKey]);
+            }
+        }
+        return $aOrganizedHeaders;
+    }
+
+
+
+    /**
+     * @param array $aSetNew with [ CURLOPT_% => val ]
+     * @return array having [ CURLOPT_% => val ] framework values
+     */
+    private function getSetCurlSimpleDefaultOptions(array $aSetNew = []): array
     {
         if ($aSetNew) {
             $this->aCurlSimpleDefaultOptions = $aSetNew;
@@ -99,12 +129,12 @@ trait AfrHttpCurlSimpleMethods
 
 
     /**
-     * @param array $aCurlSetOpt
-     * @return array
+     * @param array $aCurlSetOpt with [ CURLOPT_% => val ]
+     * @return array having [ CURLOPT_% => val ] custom + framework values
      */
     private function prepareCurlOrganizedOptions(array $aCurlSetOpt): array
     {
-        $aOrganizedOpt = $this->getCurlSimpleDefaultOptions();
+        $aOrganizedOpt = $this->getSetCurlSimpleDefaultOptions();
         foreach ($aCurlSetOpt as $iHeaderKey => $mHeaderVal) {
             if (isset($aOrganizedOpt[$iHeaderKey]) && (is_null($mHeaderVal) || $mHeaderVal === '')) {
                 unset($aOrganizedOpt[$iHeaderKey]);
@@ -125,8 +155,8 @@ trait AfrHttpCurlSimpleMethods
      * @throws AfrHttpHeaderFormattersException
      */
     private function prepareCurlOrganizedOptionsAndHeaders(
-        array $aCurlSetOpt,
-        array $aOrganizedHeaders,
+        array  $aCurlSetOpt,
+        array  $aOrganizedHeaders,
         string $sMethod,
         string $sUrl
     ): array
@@ -172,10 +202,10 @@ trait AfrHttpCurlSimpleMethods
         $aCurlSetOpt[CURLOPT_MAXREDIRS] = max(-1, $iMaxRedirects); // -1; 0; int
     }
 
-    /**
-     * @param array $aCurlSetOpt
-     * @param array $aPostFields
-     * @param string $sMethod
+    /** Set body data for POST request
+     * @param array $aCurlSetOpt [ CURLOPT_% => val ] for function curl_setopt_array()
+     * @param array $aPostFields [ key=> val ]
+     * @param string $sMethod mandatory POST
      * @return void
      */
     private function prepareCurlOrganizedOptionsSetPostData(array &$aCurlSetOpt, array $aPostFields, string $sMethod): void
@@ -187,8 +217,8 @@ trait AfrHttpCurlSimpleMethods
     }
 
     /**
-     * @param array $aCurlSetOpt
-     * @param bool $bReturnConnectionHeaders
+     * @param array $aCurlSetOpt [ CURLOPT_% => val ] for function curl_setopt_array()
+     * @param bool $bReturnConnectionHeaders set [ CURLOPT_HEADER = 1]
      * @return void
      */
     private function prepareCurlOrganizedOptionsSetReturnConnectionHeaders(
@@ -200,8 +230,8 @@ trait AfrHttpCurlSimpleMethods
     }
 
     /**
-     * @param array $aCurlSetOpt
-     * @param array $aUserPwd
+     * @param array $aCurlSetOpt [ CURLOPT_% => val ] for function curl_setopt_array()
+     * @param array $aUserPwd [ 0=> username, 1=> pwd ]
      * @return void
      * @throws AfrHttpCurlSimpleException
      */
@@ -227,21 +257,40 @@ trait AfrHttpCurlSimpleMethods
     }
 
 
-    private function oldPrea($mixed)
+
+    /**
+     * @param array $aOrganizedCurlOptions [ CURLOPT_% => val ] for function curl_setopt_array()
+     * @param bool $bVarDump inline var_dump
+     * @return array having replaced afferent indexes with string CURLOPT_% codes
+     */
+    private function debugTranslateOrganizedCurlOptions(array $aOrganizedCurlOptions, bool $bVarDump = false): array
     {
-        echo '<pre>' . print_r($this->oldH($mixed), true) . '</pre>';
+        $aAlias = $this->debugGetCurlConstantAliasCodes();
+        $aDebugOptions = [];
+        foreach ($aOrganizedCurlOptions as $sK => $mV) {
+            $aDebugOptions[$aAlias[$sK] ?? $sK] = $mV;
+        }
+        if ($bVarDump) {
+            var_dump($aDebugOptions);
+        }
+        return $aDebugOptions;
     }
 
-    private function oldH($str, $enc = 'UTF-8')
+
+    /**
+     * @return array having constants with CURLOPT_% codes
+     */
+    private function debugGetCurlConstantAliasCodes(): array
     {
-        if (is_array($str)) {
-            foreach ($str as $key => &$val) {
-                $val = $this->oldH($val);
+        $aAlias = [];
+        foreach (get_defined_constants() as $sConstant => $mVal) {
+            $sPrefix = '';
+            $iPrefix = strlen($sPrefix);
+            if (substr($sConstant, 0, $iPrefix) === $sPrefix) {
+                $aAlias[$mVal] = $sConstant;
             }
-        } elseif (is_string($str)) {
-            $str = @htmlentities($str, ENT_QUOTES, $enc);
         }
-        return $str;
+        return $aAlias;
     }
 
 

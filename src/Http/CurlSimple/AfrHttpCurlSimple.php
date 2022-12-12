@@ -5,15 +5,16 @@ namespace Autoframe\Core\Http\CurlSimple;
 
 use Autoframe\Core\Http\CurlSimple\Exception\AfrHttpCurlSimpleException;
 use Autoframe\Core\Http\Header\Formatters\Exception\AfrHttpHeaderFormattersException;
-
 use Autoframe\Core\Http\Header\Formatters\AfrHttpHeaderFormatters;
 use Autoframe\Core\Http\Header\Formatters\AfrHttpHeaderFormattersCookie;
+use Autoframe\Core\Http\Url\AfrUrlUtils;
 
 trait AfrHttpCurlSimple
 {
     use AfrHttpHeaderFormatters;
     use AfrHttpHeaderFormattersCookie;
     use AfrHttpCurlSimpleMethods;
+    use AfrUrlUtils;
 
     /**
      * @param string $sUrl
@@ -74,33 +75,20 @@ trait AfrHttpCurlSimple
         return ['header' => $http_response_header, 'content' => $response];
     }
 
-    /**
-     * @return array
-     */
-    public function getCurlConstantAliasCodes(): array
-    {
-        $aAlias = [];
-        foreach (get_defined_constants() as $sConstant => $mVal) {
-            $sPrefix = 'CURLOPT_';
-            $iPrefix = strlen($sPrefix);
-            if (substr($sConstant, 0, $iPrefix) === $sPrefix) {
-                $aAlias[$mVal] = $sConstant;
-            }
-        }
-        return $aAlias;
-    }
+
+
 
     /**
      * @param string $sUrl full url https://...
-     * @param string $sMethod  GET, POST, HEAD...
-     * @param array $aPostFields  [ k=>v ]
-     * @param array $aHeaders  [ 0=>'Afr: curl' | k=>v : 'Accept-Language' => 'en'   ]
-     * @param array $aSetOpt  [ CURLOPT_TIMEOUT => 5 , ]
-     * @param array|string $saCookies  [ k=>v, ] | lang=en; ts=1669731924
+     * @param string $sMethod GET, POST, HEAD...
+     * @param array $aPostFields [ k=>v ]
+     * @param array $aHeaders [ 0=>'Afr: curl' | k=>v : 'Accept-Language' => 'en'   ]
+     * @param array $aSetOpt [ CURLOPT_TIMEOUT => 5 , ]
+     * @param array|string $saCookies [ k=>v, ] | lang=en; ts=1669731924
      * @param string $sRef full url https://...
-     * @param int $iMaxRedirects  zero, +int or -1 = infinite
-     * @param array $aUserPwd  [0=> user, 1=> pwd]
-     * @return array used with: $aResult = $this->makeSimpleCurlRequest($aFinalCurlOptions)
+     * @param int $iMaxRedirects zero, +int or -1 = infinite
+     * @param array $aUserPwd [0=> user, 1=> pwd]
+     * @return array used with: $aResult = $this->makeSimpleCurlRequest($aOrganizedCurlOptions)
      * @throws AfrHttpCurlSimpleException
      * @throws AfrHttpHeaderFormattersException
      */
@@ -121,7 +109,6 @@ trait AfrHttpCurlSimple
         }
 
         $aOrganizedHeaders = $this->prepareCurlOrganizedHeaders($aHeaders);
-        $aCurlOptions = $this->prepareCurlOrganizedOptions($aSetOpt);
 
         if ($sRef) {
             $aOrganizedHeaders['Referer'] = $sRef;
@@ -140,50 +127,111 @@ trait AfrHttpCurlSimple
             unset($aOrganizedHeaders['Cookie']);
         }
 
-        $aFinalCurlOptions = $this->prepareCurlOrganizedOptionsAndHeaders($aCurlOptions, $aOrganizedHeaders, $sMethod, $sUrl);
-        $this->prepareCurlOrganizedOptionsSetMaxRedirects($aFinalCurlOptions, $iMaxRedirects);
-        $this->prepareCurlOrganizedOptionsSetPostData($aFinalCurlOptions, $aPostFields, $sMethod);
-        $this->prepareCurlOrganizedOptionsSetReturnConnectionHeaders($aFinalCurlOptions, true);
-        $this->prepareCurlOrganizedOptionsSetUserPwd($aFinalCurlOptions, $aUserPwd);
-        return $aFinalCurlOptions;
+        $aOrganizedCurlOptions = $this->prepareCurlOrganizedOptionsAndHeaders(
+            $this->prepareCurlOrganizedOptions($aSetOpt),
+            $aOrganizedHeaders,
+            $sMethod,
+            $sUrl
+        );
+        $this->prepareCurlOrganizedOptionsSetMaxRedirects($aOrganizedCurlOptions, $iMaxRedirects);
+        $this->prepareCurlOrganizedOptionsSetPostData($aOrganizedCurlOptions, $aPostFields, $sMethod);
+        $this->prepareCurlOrganizedOptionsSetReturnConnectionHeaders($aOrganizedCurlOptions, true);
+        $this->prepareCurlOrganizedOptionsSetUserPwd($aOrganizedCurlOptions, $aUserPwd);
+        return $aOrganizedCurlOptions;
 
     }
 
     /**
-     * @param array $aFinalCurlOptions
+     * @param array $aOrganizedCurlOptions [ CURLOPT_% => val ] for function curl_setopt_array()
      * @param bool $bInlineDebug
-     * @return string[]
+     * @return array
+     * @throws AfrHttpHeaderFormattersException
      */
-    protected function makeSimpleCurlRequest(array $aFinalCurlOptions, bool $bInlineDebug = false): array
+    protected function makeSimpleCurlRequest(array $aOrganizedCurlOptions, bool $bInlineDebug = false): array
     {
-        if($bInlineDebug){
-            $aAlias = $this->getCurlConstantAliasCodes();
-            $aDebugOptions = [];
-            foreach($aFinalCurlOptions as $sK=>$mV){
-                $aDebugOptions[isset($aAlias[$sK]) ? $aAlias[$sK] : $sK] = $mV;
-            }
-            var_dump($aDebugOptions);
-
+        if ($bInlineDebug) {
+            $this->debugTranslateOrganizedCurlOptions($aOrganizedCurlOptions, $bInlineDebug);
         }
         $ch = curl_init();
-        curl_setopt_array($ch, $aFinalCurlOptions);
+        curl_setopt_array($ch, $aOrganizedCurlOptions);
 
         $response = curl_exec($ch);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
 
-        $result = [
-            'header' => substr($response, 0, $header_size),
-            'body' => substr($response, $header_size),
-            'curl_error' => curl_error($ch),
-            'http_code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
-            'last_url' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL)
+        $aResult = [
+            'sHeader' => substr($response, 0, $header_size),
+            'sBody' => substr($response, $header_size),
+            'sCurlError' => curl_error($ch),
+            'mHttpCode' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
+            'sLastUrl' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
+            'aOrganizedCurlOptions' => $aOrganizedCurlOptions,
         ];
         curl_close($ch);
+        $this->updateSimpleCurlHandleAfterRequest($aOrganizedCurlOptions, $aResult);
+        return $aResult;
+    }
 
-        //	if ($result['curl_error'])    throw new Exception($result['curl_error']);
-        //	if ($result['http_code']!='200')    throw new Exception("HTTP Code = ".$result['http_code']);
-        //	if (!$result['body'])        throw new Exception("Body of file is empty");
-        return $result;
+    /**
+     * @param array $aOrganizedCurlOptions
+     * @param array $result
+     * @return void
+     * @throws AfrHttpHeaderFormattersException
+     */
+    private function updateSimpleCurlHandleAfterRequest(array $aOrganizedCurlOptions, array &$result)
+    {
+        $aSetCookie = [];
+        $sLocation = '';
+
+        if (!empty($result['sHeader']) && is_string($result['sHeader'])) {
+            foreach ($this->formatHttpRawHeadersToArr($result['sHeader']) as $sHeaderDirective) {
+                if (substr($sHeaderDirective, 0, 12) === 'Set-Cookie: ') {
+                    $aSetCookie[] = substr($sHeaderDirective, 12);
+                    $this->updateCookiesInOrganizedCurlOptions($aOrganizedCurlOptions, $sHeaderDirective);
+                } elseif (substr($sHeaderDirective, 0, 10) === 'Location: ') {
+                    $sLocation = substr($sHeaderDirective, 10);
+                    if (substr($sLocation, 0, 1) === '/') {
+                        $sLocation = $this->getUrlSchemeHostUpToPath($aOrganizedCurlOptions[CURLOPT_URL]) . $sLocation;
+                    }
+                }
+            }
+        }
+
+        $result['aSetCookie'] = $aSetCookie;
+        $result['aNewLocation'] = $aOrganizedCurlOptions[CURLOPT_URL] = $sLocation;
+        $result['aNewOrganizedCurlOptions'] = $aOrganizedCurlOptions;
+
+    }
+
+    /**
+     * @param array $aOrganizedCurlOptions
+     * @param string $sHeaderDirective
+     * @return void
+     * @throws AfrHttpHeaderFormattersException
+     */
+    private function updateCookiesInOrganizedCurlOptions(array &$aOrganizedCurlOptions, string $sHeaderDirective): void
+    {
+        $aParseHeaderLineSetCookieInfo = $this->parseHeaderLineSetCookieInfo($sHeaderDirective);
+        if(!$aParseHeaderLineSetCookieInfo){
+            return;
+        }
+        $aExistingCookies = empty($aOrganizedCurlOptions[CURLOPT_COOKIE]) ? [] :
+            $this->formatCookieLineIntoAssociativeArray($aOrganizedCurlOptions[CURLOPT_COOKIE], false);
+
+        $sCookieName = $aParseHeaderLineSetCookieInfo['sCookieName'];
+        if ($aParseHeaderLineSetCookieInfo['iExpire'] < time()) {
+            if (isset($aExistingCookies[$sCookieName])) {
+                unset($aExistingCookies[$sCookieName]);
+            }
+        } else {
+            $aExistingCookies[$sCookieName] = $aParseHeaderLineSetCookieInfo['sCookieValue'];
+        }
+
+        if (count($aExistingCookies)) {
+            $aOrganizedCurlOptions[CURLOPT_COOKIE] = $this->formatIntoCookieHeaderLine($aExistingCookies, false, false);
+        } else {
+            unset($aOrganizedCurlOptions[CURLOPT_COOKIE]);
+        }
+
     }
 
     /**
@@ -195,12 +243,12 @@ trait AfrHttpCurlSimple
      */
     protected function makeTestRequestTo(
         string $sUrl = 'https://autoframe.ro/',
-        array $aPost = []
+        array  $aPost = []
     )
     {
-        $aFinalCurlOptions = $this->prepareSimpleCurlHandle(
+        $aOrganizedCurlOptions = $this->prepareSimpleCurlHandle(
             $sUrl,
-            $aPost ? 'POST':'GET',
+            $aPost ? 'POST' : 'GET',
             $aPost,
             [
                 'Afr: curl',
@@ -209,8 +257,8 @@ trait AfrHttpCurlSimple
             [],
             'defaultP=P_cookie'
         );
-        $aResult = $this->makeSimpleCurlRequest($aFinalCurlOptions, true);
-        var_dump($aResult);
+        $aResult = $this->makeSimpleCurlRequest($aOrganizedCurlOptions, true);
+        print_r($aResult);
         die;
     }
 

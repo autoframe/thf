@@ -14,7 +14,7 @@ trait AfrHttpGzip
      * @return void
      * @throws AfrHttpGzipException
      */
-    public function printAsGzip(
+    public function outputPrintAsGzip(
         string $sData,
         int    $iLevel = -1,
         int    $iEncoding = ZLIB_ENCODING_GZIP,
@@ -36,7 +36,7 @@ trait AfrHttpGzip
             !empty($_SERVER['HTTP_ACCEPT_ENCODING']) &&
             substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')
         ) {
-            header("Content-Encoding: gzip");
+            header('Content-Encoding: gzip');
             $sGz = gzencode($sData, $iLevel, $iEncoding);
             if ($sGz === false) {
                 throw new AfrHttpGzipException('Gzip encode failed!');
@@ -71,7 +71,7 @@ trait AfrHttpGzip
             !empty($_SERVER['HTTP_ACCEPT_ENCODING']) &&
             substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')
         ) {
-            return ob_start("ob_gzhandler");
+            return ob_start('ob_gzhandler');
         }
         return false;
     }

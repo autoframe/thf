@@ -1,7 +1,7 @@
 <?php
+declare(strict_types=1);
 
 namespace Autoframe\Core\FileSystem\Mime;
-use Autoframe\Core\FileSystem\Mime\AfrFileMime;
 
 class AfrFileMimeClass implements AfrFileMimeInterface
 {

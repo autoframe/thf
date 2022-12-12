@@ -90,7 +90,7 @@ class AfrStr
                 $val = self::h($val, $sEncoding);
             }
         } elseif (is_string($saData)) {
-            $saData = @htmlentities($saData, self::$iFlagsHtmlentities, $sEncoding);
+            $saData = htmlentities($saData, self::$iFlagsHtmlentities, $sEncoding);
         }
         return $saData;
     }

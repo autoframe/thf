@@ -15,7 +15,7 @@ trait AfrHttpHeaderFormattersCookie
      * @param string|bool $sRead_bSet
      * @return bool
      */
-    protected function formatCookieHeaderEnforcePhpOverRFC6265($sRead_bSet = 'Y'):bool
+    protected function formatCookieHeaderEnforcePhpOverRFC6265($sRead_bSet = 'Y'): bool
     {
         if ($sRead_bSet !== 'Y') {
             $this->bFormatEnforcePhpCookieOverRFC6265 = (bool)$sRead_bSet;
@@ -28,7 +28,7 @@ trait AfrHttpHeaderFormattersCookie
      * @param string|bool $sRead_bSet
      * @return bool
      */
-    protected function formatCookieLineEncodeSizeOptimize($sRead_bSet = 'Y'):bool
+    protected function formatCookieLineEncodeSizeOptimize($sRead_bSet = 'Y'): bool
     {
         if ($sRead_bSet !== 'Y') {
             $this->bCookieLineEncodeSizeOptimize = (bool)$sRead_bSet;
@@ -94,12 +94,12 @@ trait AfrHttpHeaderFormattersCookie
                     $sFinalVal = urldecode($mVal[1]);
                 }
                 $sOut .=
-                    $this->formatCookieNameForPhpHeader($sFinalKey, true) .
+                    $this->formatCookieNameForHeader($sFinalKey, true) .
                     '=' .
                     $this->formatCookieValueForHeader($sFinalVal) . $sCookieGlue;
             }
-            if($sOut){
-                $sOut = substr($sOut,0,-strlen($sCookieGlue));
+            if ($sOut) {
+                $sOut = substr($sOut, 0, -strlen($sCookieGlue));
             }
 
         }
@@ -119,20 +119,35 @@ trait AfrHttpHeaderFormattersCookie
     ): array
     {
         $aOut = [];
+        foreach ($this->parseHeaderCookieLine($sCookies, $bStrictError) as $aData) {
+            $aOut[$aData[0]] = $aData[1];
+        }
+        return $aOut;
+    }
+
+    /**
+     * @param string $sCookieLine
+     * @param bool $bStrictError
+     * @return array
+     * @throws AfrHttpHeaderFormattersException
+     */
+    protected function parseHeaderCookieLine(string $sCookieLine, bool $bStrictError = false): array
+    {
+        $aOut = [];
         foreach (['Cookie: ', 'Set-Cookie: '] as $sHeaderPrefix) {
             $iHeaderPrefix = strlen($sHeaderPrefix);
-            if (substr($sCookies, 0, $iHeaderPrefix) === $sHeaderPrefix) {
-                $sCookies = substr($sCookies, $iHeaderPrefix);
+            if (substr($sCookieLine, 0, $iHeaderPrefix) === $sHeaderPrefix) {
+                $sCookieLine = substr($sCookieLine, $iHeaderPrefix);
             }
         }
 
-        $sCookies = trim($sCookies, '; ');
+        $sCookieLine = trim($sCookieLine, '; ');
         if ($bStrictError) {
-            if (strpos($sCookies, '=') === false || strlen($sCookies) > 0 && strlen($sCookies) < 3) {
+            if (strpos($sCookieLine, '=') === false || strlen($sCookieLine) > 0 && strlen($sCookieLine) < 3) {
                 throw new AfrHttpHeaderFormattersException(
                     'Invalid cookie data structure for $sCookies: ' . func_get_arg(0)
                 );
-            } elseif (strpos($sCookies, "\r") !== false || strpos($sCookies, "\n") !== false) {
+            } elseif (strpos($sCookieLine, "\r") !== false || strpos($sCookieLine, "\n") !== false) {
                 throw new AfrHttpHeaderFormattersException(
                     'Invalid cookie data structure because new line control characters was found!'
                 );
@@ -140,9 +155,9 @@ trait AfrHttpHeaderFormattersCookie
 
         }
 
-        foreach (explode(';', $sCookies) as $sCookieKeyAndVal) {
+        foreach (explode(';', $sCookieLine) as $sCookieKeyAndVal) {
             $sCookieKeyAndVal = trim($sCookieKeyAndVal);
-            if(!$sCookieKeyAndVal){
+            if (!$sCookieKeyAndVal) {
                 continue;
             }
             $aCookiePair = explode('=', $sCookieKeyAndVal);
@@ -152,10 +167,52 @@ trait AfrHttpHeaderFormattersCookie
                 );
             }
             $sKey = urldecode(trim(substr($sCookieKeyAndVal, 0, strlen($aCookiePair[0]))));
-            $sKey = $this->formatCookieNameForPhpHeader($sKey, false);
+            $sKey = $this->formatCookieNameForHeader($sKey, false);
             $sVal = urldecode(trim(substr($sCookieKeyAndVal, strlen($aCookiePair[0]) + 1)));
-            $aOut[$sKey] = $sVal;
+            $aOut[] = [$sKey, $sVal];
         }
+        return $aOut;
+    }
+
+    /**
+     * @param string $sHeaderDirective
+     * @return array
+     * @throws AfrHttpHeaderFormattersException
+     */
+    protected function parseHeaderLineSetCookieInfo(string $sHeaderDirective): array
+    {
+        if (substr($sHeaderDirective, 0, 12) !== 'Set-Cookie: ') {
+            return [];
+        }
+        $aParsed = $this->parseHeaderCookieLine($sHeaderDirective, false);
+        if (!isset($aParsed[0][0]) || !isset($aParsed[0][1])) {
+            return [];
+        }
+        $aOut = [
+            'sCookieName' => $aParsed[0][0],
+            'sCookieValue' => $aParsed[0][1],
+            'iExpire' => strlen($aParsed[0][1]) < 1 ? 0 : (time() + 3600 * 24), //session Cookie
+        ];
+
+        foreach ($aParsed as $aParsedData) {
+            if (!isset($aParsedData[0])) {
+                continue;
+            }
+            if ($aParsedData[0] === 'expires') {
+                $aOut['iExpire'] = strtotime($aParsedData[1]);
+            } elseif ($aParsedData[0] === 'path' && !empty($aParsedData[1])) {
+                $aOut['sPath'] = $aParsedData[1];
+            } elseif ($aParsedData[0] === 'domain' && !empty($aParsedData[1])) {
+                $aOut['sDomain'] = $aParsedData[1];
+            } elseif ($aParsedData[0] === 'SameSite' && !empty($aParsedData[1])) {
+                $aOut['sSameSite'] = $aParsedData[1];
+            } elseif ($aParsedData[0] === 'secure') {
+                $aOut['bSecure'] = true;
+            } elseif ($aParsedData[0] === 'HttpOnly') {
+                $aOut['bHttpOnly'] = true;
+            }
+        }
+
         return $aOut;
     }
 
@@ -164,7 +221,7 @@ trait AfrHttpHeaderFormattersCookie
      * @param bool $bUrlEncode
      * @return string
      */
-    protected function formatCookieNameForPhpHeader(
+    protected function formatCookieNameForHeader(
         string $sKey,
         bool   $bUrlEncode = true
     ): string
@@ -188,7 +245,7 @@ trait AfrHttpHeaderFormattersCookie
         $sVal = urlencode($sVal);
         if ($this->bCookieLineEncodeSizeOptimize) {
             $aReplace = $aSearch = ['=', ':', '{', '}', '"'];
-            foreach($aSearch as &$sEnc){
+            foreach ($aSearch as &$sEnc) {
                 $sEnc = urlencode($sEnc);
             }
             $sVal = str_replace($aSearch, $aReplace, $sVal);

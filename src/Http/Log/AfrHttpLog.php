@@ -8,6 +8,42 @@ trait AfrHttpLog
 {
     use AfrHttpRequest;
 
+    /** Over-writable in order to custom log redirects
+     * @return void
+     */
+    protected function hXxxLog()
+    {
+        //TODO de testat!
+        print_r($this->getMinifiedBacktrace(1));
+    }
+
+    /**
+     * @param int $iRemoveLastNLevels
+     * @return array
+     */
+    protected function getMinifiedBacktrace(int $iRemoveLastNLevels = 1) {
+        $aHuge = debug_backtrace();
+        $aHuge = array_slice($aHuge, $iRemoveLastNLevels);
+        $aStack = [];
+        foreach ( $aHuge as $iKey => & $aItem ) {
+            if( isset( $aItem['object'] ) ) {
+                unset( $aHuge[ $iKey ][ 'object' ] );
+            }
+            if( isset( $aItem['args'] ) ) {
+                unset( $aHuge[ $iKey ][ 'args' ] );
+            }
+
+            $aStack[] =
+                ($aItem['file'] ?? '---'). ':' .
+                ($aItem['line'] ?? '---'). ' > ' .
+                ($aItem['class'] ?? '---'). '::' .
+                ($aItem['function'] ?? '---'). ' - ' .
+                ($aItem['line'] ?? '---');
+
+        }
+        unset($aItem);
+        return $aStack;
+    }
     /**
      * @param string $dir
      * @param string $sExtension

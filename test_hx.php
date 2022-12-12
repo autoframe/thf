@@ -22,12 +22,17 @@ class runn{
     use AfrHttpLog;
 
     public function __construct(){
+        $this->hXxxLog();
         if(empty($_GET['log'])){
-            $this->makeTestRequestTo('http://localhost:8074/afr/test_hx.php?log=1',['form'=>'go!','log'=>'log']);
+            //$this->makeTestRequestTo('http://localhost:8074/afr/test_hx.php?log=1',['form'=>'go!','log'=>'log']);
+            $this->makeTestRequestTo('http://localhost:808/afr/test_hx.php?log=1',['form'=>'go!','log'=>'log']);
         }
         else{
-            setcookie('Xset'.rand(20,22),'Yes',time()+300,'/');
+            setcookie('Xset21','Yes',time()+300,'/');
             setcookie('Yset'.rand(20,22),'Yes',time()+300,'/');
+            setcookie('sterse','nnnoo',0,'/');
+            setcookie('sterse_fara_path',null);
+            setcookie('defaultP',null,0);
             print_r($this->logHttpRequestedToFile());
         }
         die;

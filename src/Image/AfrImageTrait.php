@@ -6,7 +6,7 @@ use Autoframe\Core\Image\Exception\AfrImageException;
 
 trait AfrImageTrait
 {
-    /** @var resource|GDImage|false */
+    /** @var resource|false|GDImage */
     protected $image;
     protected int $iImgWidth;
     protected int $iImgHeight;
@@ -16,7 +16,7 @@ trait AfrImageTrait
      * @param int $iImgHeight
      * @return int
      */
-    function imgHeight(int $iImgHeight = 0): int
+    public function imgHeight(int $iImgHeight = 0): int
     {
         if ($iImgHeight && $iImgHeight > 0) {
             $this->iImgHeight = $iImgHeight;
@@ -32,7 +32,7 @@ trait AfrImageTrait
      * @param int $iImgWidth
      * @return int
      */
-    function imgWidth(int $iImgWidth = 0): int
+    public function imgWidth(int $iImgWidth = 0): int
     {
         if ($iImgWidth && $iImgWidth > 0) {
             $this->iImgWidth = $iImgWidth;
@@ -198,12 +198,12 @@ trait AfrImageTrait
      */
     protected function setFont(string $sFontPathName, bool $bCheckIfFileExists = false): void
     {
-        if($bCheckIfFileExists){
-            if(
+        if ($bCheckIfFileExists) {
+            if (
                 !is_file($sFontPathName) &&
-                !is_file(getenv('GDFONTPATH').DIRECTORY_SEPARATOR.$sFontPathName)
-            ){
-                throw new AfrImageException('The following font file was nat found: '.$sFontPathName);
+                !is_file(getenv('GDFONTPATH') . DIRECTORY_SEPARATOR . $sFontPathName)
+            ) {
+                throw new AfrImageException('The following font file was nat found: ' . $sFontPathName);
             }
         }
         $this->sFontFile = $sFontPathName;
