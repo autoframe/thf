@@ -36,11 +36,11 @@ trait AfrHttpGzip
             !empty($_SERVER['HTTP_ACCEPT_ENCODING']) &&
             substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')
         ) {
-            header('Content-Encoding: gzip');
             $sGz = gzencode($sData, $iLevel, $iEncoding);
             if ($sGz === false) {
                 throw new AfrHttpGzipException('Gzip encode failed!');
             } else {
+                header('Content-Encoding: gzip');
                 echo $sGz;
             }
         } else {
@@ -53,7 +53,7 @@ trait AfrHttpGzip
     }
 
     /**
-     * Run early on, and tot combined with 304 cache requests!
+     * Run early on, and not combine with 304 cache requests!
      * Check for session start...
      * @return bool
      * @throws AfrHttpGzipException

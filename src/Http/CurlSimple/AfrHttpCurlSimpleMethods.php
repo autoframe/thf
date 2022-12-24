@@ -283,11 +283,13 @@ trait AfrHttpCurlSimpleMethods
     private function debugGetCurlConstantAliasCodes(): array
     {
         $aAlias = [];
+        $sPrefix = 'CURLOPT_';
+        $iPrefix = strlen($sPrefix);
         foreach (get_defined_constants() as $sConstant => $mVal) {
-            $sPrefix = '';
-            $iPrefix = strlen($sPrefix);
             if (substr($sConstant, 0, $iPrefix) === $sPrefix) {
-                $aAlias[$mVal] = $sConstant;
+                if(is_int($mVal) || is_string($mVal)){
+                    $aAlias[$mVal] = $sConstant;
+                }
             }
         }
         return $aAlias;

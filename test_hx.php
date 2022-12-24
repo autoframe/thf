@@ -31,8 +31,8 @@ class runn{
             setcookie('Xset21','Yes',time()+300,'/');
             setcookie('Yset'.rand(20,22),'Yes',time()+300,'/');
             setcookie('sterse','nnnoo',0,'/');
-            setcookie('sterse_fara_path',null);
-            setcookie('defaultP',null,0);
+            setcookie('sterse_fara_path','');
+            setcookie('defaultP','',0);
             print_r($this->logHttpRequestedToFile());
         }
         die;

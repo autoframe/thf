@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Autoframe\Core\Export\Php;
 
@@ -15,17 +16,17 @@ trait AfrExportPhpArr
     {
         $sOut = '';
         foreach ($aData as $mk => $mVal) {
-            $sKtype = gettype($mk);
+            $sKType = gettype($mk);
             $sVType = gettype($mVal);
-            if ($sKtype === 'integer' || $sKtype=== 'float') {
+            if ($sKType === 'integer' || $sKType=== 'double') {
                 $sOut .= $mk;
-            } elseif ($sKtype === 'string') {
+            } elseif ($sKType === 'string') {
                 $sOut .= $sQuot . addslashes($mk) . $sQuot;
             } else {
                 $sOut .= $sQuot . addslashes(serialize($mk)) . $sQuot;
             }
             $sOut .= '=>';
-            if ($sVType === 'integer' || $sVType=== 'float') {
+            if ($sVType === 'integer' || $sVType=== 'double') {
                 $sOut .= $mVal;
             } elseif ($sVType === 'string') {
                 $sOut .= $sQuot . addslashes($mVal) . $sQuot;

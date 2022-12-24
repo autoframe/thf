@@ -5,7 +5,13 @@ namespace Autoframe\Core\Http\Url;
 trait AfrUrlUtils
 {
 
-    public function get_ntlm_link($user, $pass, $link)
+    /**
+     * @param string $user
+     * @param string $pass
+     * @param string $link
+     * @return false|string
+     */
+    public function getNtlmLinkContents(string $user, string $pass, string $link)
     {
         return file_get_contents(urlencode($user) . '@' . urlencode($pass) . ':' . $link);
     }

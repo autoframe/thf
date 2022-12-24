@@ -46,7 +46,15 @@ trait AfrHttpRequest
         return $aHeaders;
     }
 
-
+    /**
+     * @param bool $bBody
+     * @param bool $bHeaders
+     * @param bool $bServer
+     * @param bool $bSes
+     * @param bool $bEnv
+     * @param bool $bGlobals
+     * @return array
+     */
     public function getHttpRequested(
         bool $bBody = false,
         bool $bHeaders = false,

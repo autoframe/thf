@@ -284,6 +284,7 @@ class AfrSessionPhp implements AfrSessionInterface
     }
 
     /**
+     * TODO CHECK predefined parameter types
      * @param int|array $lifetime_or_options
      * @param string|null $path
      * @param string|null $domain
@@ -295,7 +296,7 @@ class AfrSessionPhp implements AfrSessionInterface
      * Alternative signature available as of PHP 7.3.0: session_set_cookie_params(array $lifetime_or_options): bool
      */
     function session_set_cookie_params($lifetime_or_options,
-                                       ?string $path = null,
+                                       ?string $path = null, //TODO CHECK predefined parameter types
                                        ?string $domain = null,
                                        ?bool $secure = null,
                                        ?bool $httponly = null,
@@ -312,7 +313,7 @@ class AfrSessionPhp implements AfrSessionInterface
             }
             return session_set_cookie_params(
                 (int)$lifetime_or_options,
-                $path . '; samesite=' . $samesite,
+                $path . ($samesite ? '; samesite=' . $samesite : ''),
                 $domain,
                 $secure,
                 $httponly
