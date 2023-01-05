@@ -3,168 +3,165 @@ declare(strict_types=1);
 
 namespace Autoframe\Core\Entity;
 
-use Autoframe\Core\Entity;
-
 // https://www.php.net/manual/en/language.oop5.magic.php
+use ReflectionClass;
+use ReflectionProperty;
+
 class AfrEntity
 {
-    /**
-     * Sirul de mapari folosit la compararea atributelor.
-     * Cand avem nevoie de ea, o generam f. usor folosind
-     *        `$this->generateMapping();`
-     *
-     * @var array
-     */
-    var $aMap = array();
-    /**
-     * Atributele ce nu sunt luate in considerare la
-     * rularea metodei `$this->differencesWith()`.
-     *
-     * @var array
-     */
-    var $aIgnoredAttributes = array();
+    protected bool $__autoCastByPrefixNotation = true;
+    private bool $__dirty;
+    private array $__dirtyProperty;
+
+    private static array $__objProps = [];
+
+    public string $sTest = 'Yha!';
+    public array $aData;
+    private int $iNbr = 88;
+    public $mMix;
+    public int $iIntConv;
 
     /**
-     * Colectiile de date pentru modul editare/vizualizare
+     * @param array $aAttributes
      */
-    var $aCollections = array();
-
-    public function __construct(array $attributes=[])
+    public function __construct(array $aAttributes = [])
     {
-        if($attributes){
-            foreach (get_object_vars($this) as $key => $value) {
-                $this->$key = $attributes[$key] ?? null;
+        if ($aAttributes) {
+            //create with array attributes
+            foreach ($this->getPublicPropertiesMap() as $sProperty) {
+                if (isset($aAttributes[$sProperty])) {
+                    $this->castProperty($sProperty, $aAttributes[$sProperty]);
+                }
+            }
+        } elseif (!isset(self::$__objProps[get_class($this)])) {
+            //init reflection
+            $this->getEntityPublicProperties();
+        }
+        $this->__dirty = false;
+        $this->__dirtyProperty = [];
+    }
+
+    /**
+     * @return array
+     */
+    public function getPublicPropertiesMap(): array
+    {
+        return array_keys($this->getEntityPublicProperties());
+    }
+
+    /**
+     * Get once the class type and statically store it, because the type can't change while executing the script
+     * @return ReflectionProperty[]
+     */
+    private function getEntityPublicProperties(): array
+    {
+        $sObjClass = get_class($this);
+        if (!isset(self::$__objProps[$sObjClass])) {
+            $aProps = [];
+            // https://stackoverflow.com/questions/4713680/php-get-and-set-magic-methods
+            /** @var \ReflectionProperty $oProp */
+            foreach ((new ReflectionClass($this))->getProperties() as $oProp) {
+                $sPropName = $oProp->getName();
+                if (substr($sPropName, 0, 1) !== '_' && $oProp->isPublic()) {
+                    $aProps[$sPropName] = $oProp;
+                    //$oReflectionType = $oProp->getType();
+                    //$aProps[$sPropName] = $oReflectionType ? $oReflectionType->getName() : null; '*uninitialized*';
+                }
+                $oProp->setAccessible(false);
+            }
+            self::$__objProps[$sObjClass] = $aProps;
+        }
+        return self::$__objProps[$sObjClass];
+    }
+
+    /**
+     * @return array
+     */
+    protected function getEntityPublicVars(): array
+    {
+        $aEntityPublicProperties = $this->getEntityPublicProperties();
+        $aVars = array_fill_keys(array_keys($aEntityPublicProperties), null);
+        foreach (get_object_vars($this) as $sProp => $mVal) {
+            if (isset($aEntityPublicProperties[$sProp])) {
+                $aVars[$sProp] = $mVal;
             }
         }
-
+        return $aVars;
     }
-
-    /**
-     * Castuim datele ca sa se potriveasca pe membri
-     *
-     * @param string $sProperty
-     * @param bool $bCast
-     * @param unknown_type $mValue
-     */
-    function cast($sProperty, $mValue, $bCast = true)
-    {
-        $this->__set();
-        $sDataType = substr(str_replace('_', '', $sProperty), 0, 1);
-        switch ($sDataType) {
-            case 'i':
-                $this->castInt($sProperty, $mValue, $bCast);
-                break;
-            case 'd':
-            case 'f':
-                $this->castFloat($sProperty, $mValue);
-                break;
-            case 'b':
-                $this->castBool($sProperty, $mValue);
-                break;
-            case 't':
-//		    	    $this->$sProperty = strtotime( $mValue ); break;
-            case 's': //STR
-            case 'o': //ONJ
-            case 'a': //ARR
-            case 'r': //RESOURCE
-            case 'm': //MIXED
-            default:
-                $this->$sProperty = $mValue;
-                break;
-        }
-
-    } // END func cast()
-
-    protected function castFloat($sProperty, $mValue)
-    {
-        if (is_numeric($mValue)) {
-            $this->$sProperty = (float)$mValue;
-        } else {
-            $this->$sProperty = $mValue;
-        }
-    }
-
-    protected function castInt($sProperty, $mValue, $bCast)
-    {
-        if (is_numeric($mValue)) {
-            $this->$sProperty = strlen($mValue) >= 10 ? (double)$mValue : (int)$mValue;
-        } else {
-            $this->$sProperty = $bCast ? (int)$mValue : $mValue;
-        }
-    }
-
-    protected function castBool($sProperty, $mValue)
-    {
-        if (($mValue === 'yes') || ($mValue === 'no')
-            || ($mValue === '0') || ($mValue === '1')
-            || ($mValue === 0) || ($mValue === 1)
-        ) {
-            $this->$sProperty = (boolean)$mValue;
-        } else {
-            $this->$sProperty = $mValue;
-        }
-    }
-
-    /**
-     * set a value for default properties of this class
-     *
-     * @param string $sProperty
-     * @param mixed $sValue
-     * @param bool $bCast executa sau nu cast
-     * @return
-     *     PEAR error daca nu exista membrul clasei ce se vrea a fi setat
-     */
-    function set($sProperty, $mValue, $bCast = true)
-    {
-
-        $sProperty = $this->convertMemberName($sProperty);
-        // DEBUG - uncomment next lines to debug - debugging can be seen in the logs
-        /*
-	    $sLogMessage = get_class($this) . '::set(' . $sProperty . ', '. gettype($mValue)  .' ) = $$SNIPPET$$';
-	    if( gettype($mValue) == 'string' ) {
-	       $sLogMessage = str_replace('$$SNIPPET$$', substr($mValue,0,20), $sLogMessage);
-	    } elseif( is_numeric($mValue) ) {
-	       $sLogMessage = str_replace('$$SNIPPET$$', (string)($mValue), $sLogMessage);
-	    } else {
-	        $sLogMessage = str_replace('$$SNIPPET$$', '<SMTHNG>', $sLogMessage);
-	    }
-
-	    log_message( 'debug', $sLogMessage);
-        /*  */
-
-        //if( array_key_exists( $sProperty, get_object_vars( $this ) ) ) {	//wtf? this is stupid!
-        if (isset($this->$sProperty) || property_exists($this, $sProperty)) {
-            $this->cast($sProperty, $mValue, $bCast);
-        } // end if
-
-    } // END func set()
 
     /**
      * Set object properties from an associative array.
-     *
-     * @param array $aFields
-     * @param bool $bCast executa sau nu cast
-     * Ex: $aFields = array(
+     * Ex: $aProperty = [
      *         'member_name_1' => 'value',
      *         'member_name_2' => array( 'value1', 'value2' )
-     *     );
+     *     ];
+     * @param array $aProperty
+     * @return int the number of matched properties
      */
-    function setAssoc($aFields, $bCast = true)
+    public function setAssoc(array $aProperty): int
     {
-        if (!is_array($aFields)) {
-            return;
+        $i = 0;
+        foreach ($aProperty as $sProperty => $mValue) {
+            $i += $this->set($sProperty, $mValue) ? 1 : 0;
         }
-        foreach ($aFields as $sProperty => $mValue) {
-            $this->set($sProperty, $mValue, $bCast);
-        }
-    } // END func setAssoc()
-
-    public function attachAssoc(array $aFields)
-    {
-        foreach ($aFields as $sProperty => $mValue) {
-            $this->$sProperty = $mValue;
-        }
+        return $i;
     }
+
+    /**
+     * @param string $sProperty
+     * @return bool
+     */
+    public function __isset(string $sProperty)
+    {
+        return isset($this->$sProperty);
+    }
+
+    /**
+     * @param string $sProperty
+     * @param $mValue
+     * @return void
+     */
+    public function __set(string $sProperty, $mValue)
+    {
+        echo "!!!!!!!!!YHA __SET( $sProperty );\n";
+        $this->set($sProperty, $mValue);
+    }
+
+    /**
+     * @param string $sProperty
+     * @param $mValue
+     * @return bool
+     */
+    public function set(string $sProperty, $mValue): bool
+    {
+        if (substr($sProperty, 0, 1) === '_') {
+            return false;
+        }
+        //TODO set peste permis la orice inafara de _Var
+        if (true || isset($this->$sProperty) || property_exists($this, $sProperty)) {
+            $this->castProperty($sProperty, $mValue);
+            return true;
+        }
+        return false;
+
+    }
+
+    public function __get($name)
+    {
+        if (isset($this->$name) || property_exists($this, $name)) {
+            return $this->$name;
+        }
+        return null;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return serialize($this);
+    }
+
 
     /**
      * Get the value for a default member of current class.
@@ -172,165 +169,178 @@ class AfrEntity
      * @param string $sProperty
      * @return mixed  Valoarea proprietatii cerute, daca exista. Null daca nu exista.
      */
-    function get($sProperty)
+    public function get(string $sProperty)
     {
-        $mToReturn = NULL;
-        $sProperty = $this->convertMemberName($sProperty);
         if (isset($this->$sProperty) || property_exists($this, $sProperty)) {
-            //if( array_key_exists( $sProperty, get_object_vars( $this ) ) ) { wtf again?
             return $this->$sProperty;
         }
-        return ($mToReturn);
-    } // END func get()
+        return null;
+    }
 
     /**
-     * Get a member object by reference.
-     *
+     * Get a property by reference.
      * @param string $sProperty
      * @return mixed
      */
-    function getObject($sProperty)
+    public function getReferenced(string $sProperty)
     {
-
         if (isset($this->$sProperty) || property_exists($this, $sProperty)) {
-            //if( array_key_exists( $sProperty, get_object_vars( $this ) ) ) {
-            $oObject = &$this->$sProperty;
-            if (is_object($oObject)) {
-                return $oObject;
-            }
+            $mData = &$this->$sProperty;
+            return $mData;
         }
         return null;
-    } // END func getObject()
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDirty(): bool
+    {
+        return $this->__dirty;
+    }
+
+    /**
+     * @return void
+     */
+    public function notDirty(): void
+    {
+        $this->__dirty = false;
+        $this->__dirtyProperty = [];
+    }
+
+    /**
+     * It will be used when loading/creating a new entity from a database string record
+     * @param string $sProperty
+     * @param $mValue
+     * @return void
+     */
+    private function castProperty(string $sProperty, $mValue): void
+    {
+        if (substr($sProperty, 0, 1) == '_') {
+            return;
+        }
+        if ($this->__autoCastByPrefixNotation) {
+            $mValue = $this->castToDataType($sProperty, $mValue);
+        }
+        if (!isset($this->$sProperty) || $this->$sProperty !== $mValue) {
+            $this->$sProperty = $mValue;
+            $this->__dirty = true;
+            $this->__dirtyProperty[$sProperty] = true;
+        }
+
+
+    }
+
+    /**
+     * @param string $sProperty
+     * @param $mValue
+     * @return array|bool|float|int|string|null|object|resource|mixed
+     */
+    public function castToDataType(string $sProperty, $mValue)
+    {
+        $sDataType = substr($sProperty, 0, 1);
+        if ($sDataType === 'i') { //integer
+            if (PHP_INT_SIZE === 4) { // PHP_INT_SIZE will return 4 for x86 version
+                $dProcess = (double)$mValue;
+                $mValue = ($dProcess < -1 - PHP_INT_MAX || $dProcess > PHP_INT_MAX) ? $dProcess : (int)$mValue;
+            } else {//PHP_INT_SIZE will return 8 for x64 version
+                $mValue = (int)$mValue;
+            }
+        } elseif ($sDataType === 'd') {//double
+            $mValue = (double)$mValue;
+        } elseif ($sDataType === 'f') {//float
+            $mValue = (float)$mValue;
+        } elseif ($sDataType === 'b') { //boolean
+            $mValue = (
+                $mValue === '1' ||
+                $mValue === 1 ||
+                $mValue === 'yes' ||
+                $mValue === 'Yes' ||
+                !empty($mValue)
+            );
+        } elseif ($sDataType === 't') { //Y-m-d H:i:s
+            $mValue = (string)$mValue;
+        } elseif ($sDataType === 's') { //string
+            $mValue = (string)$mValue;
+        } elseif ($sDataType === 'a') { //array
+            $mValue = (array)$mValue;
+        } elseif ($sDataType === 'o') { //object
+            $mValue = (object)$mValue;
+            /*$oValue = new \stdClass();
+            if (!is_array($mValue)) {
+                $mValue = [$sProperty => $mValue];
+            }
+            foreach($mValue as $sP=>$mV){
+                $sP = (string)$sP;
+                $oValue->$sP = $mV;
+            }
+            $mValue = $oValue;*/
+        } elseif ($sDataType === 'r') { //resource | resource (closed) as of PHP 7.2.0
+        } elseif ($sDataType === 'm') { //mixed
+        } elseif ($sDataType === 'n') { //NULL
+            $mValue = null;
+        }
+        return $mValue;
+    }
 
 
     /**
-     * Compara entitatea curenta cu o alta folosint doar cheile din arrayul
-     * de mapare (param 2) si returneaza un array de atribute cu continut
-     * diferit.
-     *
-     * Este folosit pentru compararile entitatilor din baza de date cu cele
-     * primite pentru modificari etc.
-     *
-     * @access public
-     * @param
-     *      object      Entitatea cu care comparam $this.
-     *      array       Maparile atribut-*whatever* (optional)
-     *      boolean     Depanare
-     * @return  array     array de atribute a caror valoare difera
+     * @param string $sProperty
+     * @return array|false|float|int|object|string|null
      */
-    function differencesWith(&$oEntity2, $aMap = NULL, $bDebug = false, $sPrepend = '')
+    public function getDefaultValue(string $sProperty)
     {
-
-        $bOk = true;
-        $aDifferent = array(); // arrayul de atribute diferite
-
-        if ($aMap == NULL) {
-            if (count($this->aMap) <= 0) {
-                $this->_generateMapping();
+        $sDataType = substr($sProperty, 0, 1);
+        $mValue = null;
+        if ($sDataType === 'i') {
+            $mValue = 0;
+        } elseif ($sDataType === 'd') {//double
+            $mValue = 0.0;
+        } elseif ($sDataType === 'f') {//float
+            $mValue = 0.0;
+        } elseif ($sDataType === 'b') { //boolean
+            $mValue = false;
+        } elseif ($sDataType === 't') { //Y-m-d H:i:s
+            $sDataSubType = substr($sProperty, 0, 2);
+            if ($sDataSubType === 'th') {
+                $mValue = '00:00:00';
+            } elseif ($sDataSubType === 'ty') {
+                $mValue = '0000-00-00';
+            } else {
+                $mValue = '0000-00-00 00:00:00';
             }
-            $aMap = &$this->aMap;
+        } elseif ($sDataType === 's') { //string
+            $mValue = '';
+        } elseif ($sDataType === 'a') { //array
+            $mValue = [];
+        } elseif ($sDataType === 'o') { //object
+            $mValue = (object)null;
+        } elseif ($sDataType === 'r') { //resource | resource (closed) as of PHP 7.2.0
+        } elseif ($sDataType === 'm') { //mixed
+        } elseif ($sDataType === 'n') { //NULL
         }
-        // este evident de ce :-) vom exclude din comparatie membrii de mai jos:
-        array_push($this->aIgnoredAttributes, 'aMap');
-        array_push($this->aIgnoredAttributes, 'aIgnoredAttributes');
+        return $mValue;
+    }
 
-        if (!$this || !$oEntity2) {
-            if ($bDebug) {
-                if (!$this) {
-                    echo '$this parameter';
-                } elseif (!$oEntity2) {
-                    echo '$oEntity2 parameter';
-                } else {
-                    echo 'Some weird parameter';
-                }
-                echo ' is null (or false or something)!<br />';
 
-            }
-            $bOk = false;
-        } else {
-            // verificam atributele celor doua entitati
-            if ($bDebug) {
-                echo '<hr />';
-            }
-
-            foreach ($aMap as $sKey => $sValue) {
-
-                // verificam daca acest camp este ignorat sau nu
-                $bIgnored = true;
-                if (isset($this->aIgnoredAttributes) && count($this->aIgnoredAttributes)) {
-                    if (!in_array($sKey, $this->aIgnoredAttributes)) {
-                        $bIgnored = false;
-                    }
-                } else {
-                    $bIgnored = false;
-                }
-
-                // verificam daca elementele sunt diferite (si campul nu-i ignorat)
-                if (($this->get($sKey) != $oEntity2->get($sKey)) &&
-                    !$bIgnored) {
-                    $bOk = false;
-
-                    // afisam care campuri nu pusca?
-                    if ($bDebug) {
-                        echo "<br />Field $sKey in oEntity1 is '" . $this->get($sKey) .
-                            "', should be '" . $oEntity2->get($sKey) . "' <br />";
-                    }
-
-                    $aDifferent[] = $sPrepend . $sKey;
-
-                }
-
-                //TODO: cand se vor modifica structurile, entitatile, maparile de campuri,
-                // se va putea generaliza functionalitatea de comparare recursiva intr-un mod
-                // mai eficient
-                // // Verificam daca trebuie comparate eventualele entitati incluse in
-                // // entitatile comparate
-                // if( is_object($this->get($sKey) || is_object($oEntity2->get($sKey) ) ) ) {
-                //      if( is_a($this->get($sKey), 'AfrEntityModel' ) &&
-                //          is_a($oEntity2->get($sKey), 'AfrEntityModel') ) {
-                //
-                //          $oEntInclusa = $this->get($sKey);
-                //          $oEntInclusa2 = $oEntity->get($sKey);
-                //
-                //           $aDiffInclusa = $oEntInclusa->diffWith($oEntInclusa2, );
-                //
-                //        }
-                //  }
-
-            } //...foreach
-            if ($bDebug) {
-                echo '<hr />';
-            }
-
-        }
-
-        return $aDifferent;
-
-    } // END func differencesWith()
-
-    /**
-     * Genereaza maparea $this->aMap.
-     *
-     * @access private
-     */
-    function _generateMapping()
+    public function resetDefaults()
     {
-        $aClassMembers = array_keys(get_class_vars(get_class($this)));
-
-        foreach ($aClassMembers as $sMemberName) {
-            $this->aMap[$sMemberName] = $this->get($sMemberName);
+        var_dump($this->getPublicPropertiesMap());
+        echo "-----\n";
+        var_dump($this);
+        //echo "-----\n".serialize($this);
+        echo "-----\n";
+        var_dump($this->getEntityPublicVars());
+        echo "-----\n";
+        var_dump($this->getEntityPublicProperties());
+        die;
+        if (isset($this->$name) || property_exists($this, $name)) {
+            return $this->$name;
         }
-    } // END func generateMapping()
+        return null;
+        $mDefault = $this->getDefaultValue();
 
-    /**
-     * Determinam daca valoarea e default sau nu.
-     *
-     * @param unknown_type $oEntity
-     * @param unknown_type $sProperty
-     * @return boolean
-     */
-    function isDefaultValue($oEntity, $sProperty = '')
-    {
+
         $bIsDefault = false;
 
         $sDataType = substr(str_replace('_', '', $sProperty), 0, 1);
@@ -344,7 +354,7 @@ class AfrEntity
                 }
                 break;
             case 't' :
-                if ($mValue == '0000-00-00 00:00:00' || $mValue == '0000-00-00') {
+                if ($mValue == '0000-00-00 00:00:00' || $mValue == '0000-00-00' || $mValue === '') {
                     $bIsDefault = true;
                 }
                 break;
@@ -373,13 +383,14 @@ class AfrEntity
         return ($bIsDefault);
     } // END func isDefaultValue()
 
+
     /**
      * Preia o lista de membri ai altei entitati si isi seteaza acei membri cu valorile asociate
      *
      * @param AfrEntityModel $oObiectSursa
      * @param array $aProprietati
      */
-    public function copiazaProprietati($oObiectSursa = null)
+    public function copiazaProprietati(object $oObiectSursa = null): bool
     {
         if (is_null($oObiectSursa)) {
             return false;
@@ -389,70 +400,14 @@ class AfrEntity
         if (!count($aClassMembers) || !count($aSelfMembers)) {
             return false;
         }
+        $i = 0;
         foreach ($aClassMembers as $sMembru) {
             if (in_array($sMembru, $aSelfMembers)) {
                 $this->$sMembru = $oObiectSursa->$sMembru;
+                $i++;
             }
         }
-    } // END func copiazaProprietati()
-
-    public function __isset($name)
-    {
-        $name = $this->convertMemberName($name);
-        return isset($this->$name);
-    }
-
-    public function __set($name, $value)
-    {
-        $name = $this->convertMemberName($name);
-        $this->$name = $value;
-    }
-
-    public function __get($name)
-    {
-        $name = $this->convertMemberName($name);
-        if (isset($this->$name) || property_exists($this, $name)) {
-            return $this->$name;
-        }
-        return null;
-    }
-
-    private function convertMemberName($sName)
-    {
-        if (isset($this->sDynamicInstance)) {
-            return str_replace("_" . $this->sDynamicInstance, "", $sName);
-        }
-        return $sName;
-    }
-
-    public function getCurrentMembers()
-    {
-
-        if (isset($this->sDynamicInstance)) {
-            $aMembers = array();
-            foreach (get_object_vars($this) as $sKey => $sValue) {
-                $aMembers[] = $sKey . "_" . $this->sDynamicInstance;
-            }
-            return $aMembers;
-        } else {
-            return array_keys(get_object_vars($this));
-        }
-
-    }
-
-    public function getClass()
-    {
-        if (isset($this->sDynamicInstance)) {
-            return get_class($this) . '_' . $this->sDynamicInstance;
-        } else {
-            return get_class($this);
-        }
-    }
-
-    public function getIdFromCollection($sField)
-    {
-        return isset($this->$sField) && !empty($this->aCollections[$sField])
-            ? array_search($this->$sField, $this->aCollections[$sField]) : false;
+        return (bool)$i;
     }
 
 

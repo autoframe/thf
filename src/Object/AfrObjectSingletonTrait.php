@@ -96,6 +96,7 @@ trait AfrObjectSingletonTrait
 
     /**
      * The method you use to get a new Singleton's instance from array arguments.
+     * @param array $arguments
      * @return object
      * @throws ReflectionException
      */
