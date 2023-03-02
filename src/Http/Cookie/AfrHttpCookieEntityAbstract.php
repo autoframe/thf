@@ -4,14 +4,13 @@ declare(strict_types=1);
 namespace Autoframe\Core\Http\Cookie;
 
 use Autoframe\Core\Http\Cookie\Exception\AfrHttpCookieException;
+use Autoframe\Core\Http\Cookie\Manager\AfrHttpCookieManagerTrait;
 use Autoframe\Core\Http\Cookie\Manager\AfrHttpCookieSameSiteTrait;
 use Autoframe\Core\Http\Request\AfrHttpRequestHttps;
 use Autoframe\Core\Http\Cookie\Manager\AfrHttpCookieManagerClass;
 
 abstract class AfrHttpCookieEntityAbstract
 {
-    //TODO singleton model cookie manager atunci cand apelez constructor sa salveze indexul; + metoda set si delete
-
     use AfrHttpCookieSameSiteTrait;
     use AfrHttpRequestHttps;
 
@@ -52,7 +51,7 @@ abstract class AfrHttpCookieEntityAbstract
      * If true, the cookie is not accessible from js
      * @var bool
      */
-    public bool $bHttpOnly = true;
+    public bool $bHttpOnly = false;
 
     /**
      * HTTPS secure only
@@ -67,15 +66,13 @@ abstract class AfrHttpCookieEntityAbstract
      */
     public int $iLifetime = 0;
 
-    protected AfrHttpCookieManagerClass $oCookieManager;
-
     /**
      * @throws AfrHttpCookieException
      */
     final public function __construct(
         string $sName,
         string $sValue,
-        int    $iLifetime = 0,
+        int    $iLifetime,
         string $sPath = '/',
         string $sDomain = '.',
         string $sSameSite = 'Strict',
@@ -83,11 +80,11 @@ abstract class AfrHttpCookieEntityAbstract
         bool   $bSecure = true
     )
     {
-        $this->oCookieManager = AfrHttpCookieManagerClass::getInstance();
+        $oCm = $this->getCookieManager();
         $this->sName = $sName;
         $this->sValue = $sValue;
         $this->iLifetime = $iLifetime;
-        $this->sPath = $sPath;
+        $this->sPath = ($sPath ? $sPath : $oCm->assumePath); # '/'
         $this->sDomain = $sDomain;
         $this->sSameSite = $sSameSite;
         $this->bHttpOnly = $bHttpOnly;
@@ -95,6 +92,13 @@ abstract class AfrHttpCookieEntityAbstract
         $this->validateCookieSettings();
     }
 
+    /**
+     * @return AfrHttpCookieManagerClass
+     */
+    public function getCookieManager(): AfrHttpCookieManagerClass
+    {
+        return AfrHttpCookieManagerClass::getInstance();
+    }
 
     /**
      * @return void
@@ -108,19 +112,57 @@ abstract class AfrHttpCookieEntityAbstract
         if (empty($this->sPath)) {
             $this->sPath = '/';
         }
-        if (!in_array($this->sSameSite, $this->oCookieManager->getSameSiteOptions())) {
+        if (!in_array($this->sSameSite, $this->getCookieManager()->getSameSiteOptions())) {
             $this->sSameSite = '';
         }
         if ($this->bSecure && !$this->isHttpsRequest()) {
             $this->bSecure = false;
         }
         if ($this->sDomain === '.') {
-            $this->sDomain = $this->oCookieManager->sDomainAutodetect();
+            $this->sDomain = $this->getCookieManager()->domainNameAutodetect();
         }
         if ($this->iLifetime < 0) {
             $this->iLifetime = 2; //set to expire
         }
 
+    }
+
+    /**
+     * @return bool
+     */
+    public function set(): bool
+    {
+        $oCm = $this->getCookieManager();
+        $bResponse = $oCm->setCookie(
+            $this->sName,
+            $this->sValue,
+            $this->iLifetime,
+            $this->sPath,
+            $this->sDomain,
+            $this->bSecure,
+            $this->bHttpOnly,
+            $this->sSameSite,
+        );
+        if ($bResponse) {
+            $oCm->setIndex($this);
+        }
+        return $bResponse;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function unset(): bool
+    {
+        return $this->getCookieManager()->deleteCookie(
+            $this->sName,
+            $this->sPath,
+            $this->sDomain,
+            $this->bSecure,
+            $this->bHttpOnly,
+            $this->sSameSite,
+        );
     }
 
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Autoframe\Core\Http\Cookie\Manager;
 
 use Autoframe\Core\Http\Cookie\AfrHttpCookieEntityAbstract;
+use Autoframe\Core\Http\Cookie\AfrHttpCookieGenericEntity;
+use Autoframe\Core\Http\Cookie\Exception\AfrHttpCookieException;
 use Autoframe\Core\Http\Request\AfrHttpRequestHttps;
 
 trait AfrHttpCookieManagerTrait
@@ -12,7 +14,7 @@ trait AfrHttpCookieManagerTrait
     use AfrHttpRequestHttps;
 
     public bool $bUseDomainDotNotationForAllSubdomains = true;
-    protected static array $aIndex;
+    private static array $aIndex = [];
     private string $sDomainAutodetect;
 
     /**
@@ -116,6 +118,7 @@ trait AfrHttpCookieManagerTrait
                                  string $samesite = ''
     ): bool
     {
+        $this->unsetIndex($name);
         return $this->setCookie($name, '', 1, $path, $domain, $secure, $httponly, $samesite);
     }
 
@@ -188,7 +191,6 @@ trait AfrHttpCookieManagerTrait
         if (empty($asPaths)) {
             $asPaths = $this->getPathVariations();
         }
-
 
         if (is_string($asDomains)) {
             $asDomains = [$asDomains];
@@ -276,28 +278,9 @@ trait AfrHttpCookieManagerTrait
     }
 
     /**
-     * @param AfrHttpCookieEntityAbstract $oCookie
-     * @return bool
-     */
-    public function set(AfrHttpCookieEntityAbstract $oCookie): bool
-    {
-        self::$aIndex[$oCookie->sName] = $oCookie;
-        return $this->setCookie(
-            $oCookie->sName,
-            $oCookie->sValue,
-            $oCookie->iLifetime,
-            $oCookie->sPath,
-            $oCookie->sDomain,
-            $oCookie->bSecure,
-            $oCookie->bHttpOnly,
-            $oCookie->sSameSite,
-        );
-    }
-
-    /**
      * @return string
      */
-    protected function sDomainAutodetect(): string
+    protected function domainNameAutodetect(): string
     {
         if (!isset($this->sDomainAutodetect)) {
             $sHostName = !empty($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
@@ -316,6 +299,7 @@ trait AfrHttpCookieManagerTrait
         }
         return $this->sDomainAutodetect;
     }
+
     /**
      * @return string[]
      */
@@ -323,4 +307,119 @@ trait AfrHttpCookieManagerTrait
     {
         return ['Lax', 'Strict', 'None', ''];
     }
+
+    /**
+     * @param AfrHttpCookieEntityAbstract $oCookie
+     * @return void
+     */
+    public function setIndex(AfrHttpCookieEntityAbstract $oCookie): void
+    {
+        self::$aIndex[$oCookie->sName] = $oCookie;
+    }
+
+    /**
+     * @return AfrHttpCookieEntityAbstract[]
+     */
+    public function getAllIndexes(): array
+    {
+        return self::$aIndex;
+    }
+
+    /**
+     * @param string $sCookieName
+     * @return void
+     */
+    public function unsetIndex(string $sCookieName): void
+    {
+        if ($this->issetIndex($sCookieName)) {
+            unset(self::$aIndex[$sCookieName]);
+        }
+    }
+
+    /**
+     * @param string $sCookieName
+     * @return bool
+     */
+    public function issetIndex(string $sCookieName): bool
+    {
+        return isset(self::$aIndex[$sCookieName]);
+    }
+
+    /**
+     * @return AfrHttpCookieEntityAbstract[]
+     * @throws AfrHttpCookieException
+     */
+    public function assumeAllHttpCookies(){
+        if(!empty($_COOKIE)){
+            foreach($_COOKIE as $sCookieName=>$sVal){
+                $this->assumeHttpCookie($sCookieName);
+            }
+        }
+        return $this->getAllIndexes();
+    }
+    /**
+     * @param string $sCookieName
+     * @return false|AfrHttpCookieEntityAbstract
+     * @throws AfrHttpCookieException
+     */
+    public function assumeHttpCookie(string $sCookieName)
+    {
+        if (isset($_COOKIE[$sCookieName]) && $_COOKIE[$sCookieName]) {
+            if (!$this->issetIndex($sCookieName)) {
+                self::$aIndex[$sCookieName] = new AfrHttpCookieGenericEntity(
+                    $sCookieName,
+                    $_COOKIE[$sCookieName],
+                    $this->assumeLifetime,
+                    $this->assumePath,
+                    $this->assumeDomain,
+                    $this->assumeSameSite,
+                    $this->assumeHttpOnly,
+                    $this->assumeSecure,
+                );
+            }
+            return self::$aIndex[$sCookieName];
+        }
+        return false;
+    }
+
+    /**
+     * SameSite :  'Lax', 'Strict', 'None', ''
+     * @var string
+     */
+    public string $assumeSameSite = '';
+
+    /**
+     * '.domain.com' for all subdomains
+     * 'www.domain.com' for only one subdomain
+     * '.' for all auto generated subdomains
+     * '' for the current domain
+     * @var string
+     */
+    public string $assumeDomain = '.';
+
+    /**
+     * Path '/' for all domain or subdomain
+     * @var string
+     */
+    public string $assumePath = '/';
+
+    /**
+     * If true, the cookie is not accessible from js
+     * @var bool
+     */
+    public bool $assumeHttpOnly = false;
+
+    /**
+     * HTTPS secure only
+     * @var bool
+     */
+    public bool $assumeSecure = true;
+
+    /**
+     * For browser session cookie, use 0
+     * Else time() + seconds into the future
+     * @var int
+     */
+    public int $assumeLifetime = 0;
+
 }
