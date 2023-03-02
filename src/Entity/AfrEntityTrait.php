@@ -48,6 +48,7 @@ trait AfrEntityTrait
      *     ];
      * @param $aProperty
      * @return int the number of matched properties
+     * @throws AfrEntityException
      */
     public function setAssoc($aProperty): int
     {

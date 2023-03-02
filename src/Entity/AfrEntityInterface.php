@@ -7,9 +7,9 @@ use Autoframe\Core\Entity\Exception\AfrEntityException;
 interface AfrEntityInterface
 {
     /**
-     * @param $aProperties
+     * @param $mProperties
      */
-    public function __construct($aProperties = []);
+    public function __construct($mProperties = []);
 
     /**
      * @param string $sProperty

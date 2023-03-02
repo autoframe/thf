@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autoframe\Core\Object;
@@ -46,8 +47,7 @@ trait AfrObjectSingletonTrait
 
     /**
      * The method you use to get the Singleton's instance.
-     * @return object
-     * @throws ReflectionException
+     * @return self
      */
     public static function getInstance(): object
     {
@@ -58,13 +58,15 @@ trait AfrObjectSingletonTrait
             // of the current class". That detail is important because when the
             // method is called on the subclass, we want an instance of that
             // subclass to be created here.
-            $arguments = func_get_args();
+            return self::$instances[$subclass] = new static();
+        /*    $arguments = func_get_args();
 
             if ($arguments) {
                 return self::newInstanceArrayOfArgs($arguments);
             } else {
                 return self::$instances[$subclass] = new static();
             }
+        */
         }
         return self::$instances[$subclass];
     }
@@ -97,10 +99,10 @@ trait AfrObjectSingletonTrait
     /**
      * The method you use to get a new Singleton's instance from array arguments.
      * @param array $arguments
-     * @return object
+     * @return self
      * @throws ReflectionException
      */
-    public static function newInstanceArrayOfArgs(array $arguments): object
+    public static function newInstanceArrayOfArgs(array $arguments):object
     {
         $subclass = static::class;
         return self::$instances[$subclass] =

@@ -4,6 +4,7 @@ namespace Autoframe\Core\Http\Request;
 
 trait AfrHttpRequest
 {
+    use AfrHttpRequestHttps;
     /**
      * @return array
      */
@@ -81,32 +82,15 @@ trait AfrHttpRequest
                 '$_ENV' => $bEnv ? $_ENV : null,
                 '$GLOBALS' => $bGlobals ? $GLOBALS : null,
             ],
-            'body' => $bBody ? file_get_contents("php://input") : null,
+            'body' => $bBody ? file_get_contents('php://input') : null,
         ];
     }
 
-    /**
-     * @return bool
-     */
-    public function isHttpsRequest(): bool
-    {
-        $bIsSecure = false;
-        if (
-            (!empty($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] == 'https') ||
-            (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ||
-            (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443') ||
-            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https') ||
-            (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower($_SERVER['HTTP_X_FORWARDED_SSL']) == 'on')
-        ) {
-            $bIsSecure = true;
-        }
-        return $bIsSecure;
-    }
 
     /**
      * @return string
      */
-    public function getRequestSchemeHostPort(): string
+    protected function getRequestSchemeHostPort(): string
     {
         if ($this->isCli()) {
             return php_sapi_name();
@@ -122,9 +106,10 @@ trait AfrHttpRequest
     /**
      * @return bool
      */
-    public function isCli():bool
+    protected function isCli():bool
     {
-        return !(strpos(strtolower(php_sapi_name()), 'cli') === false);
+        return http_response_code() === false;
+        //return !(strpos(strtolower(php_sapi_name()), 'cli') === false);
     }
 
 }

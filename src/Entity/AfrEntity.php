@@ -7,13 +7,17 @@ abstract class AfrEntity implements AfrEntityInterface
 {
     use AfrEntityTrait;
 
-    /** Array | Object
-     * @param $aProperties
+    /**
+     * @param $mProperties
+     * @throws Exception\AfrEntityException
      */
-    final public function __construct($aProperties = [])
+    final public function __construct($mProperties = [])
     {
-        if ($aProperties) {
-            $this->setAssoc((array)$aProperties);
+        if (is_array($mProperties)) {
+            $this->setAssoc((array)$mProperties);
+        }
+        elseif (is_object($mProperties)){
+            $this->copyPublicProperties($mProperties);
         }
         $this->_dirty = false;
         $this->_dirtyProperty = [];

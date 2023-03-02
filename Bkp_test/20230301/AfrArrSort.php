@@ -24,7 +24,7 @@ trait AfrArrSort
      * @param int $iFlags
      * @return bool
      */
-
+	 
     public function arrXSort(
         array &$aArray,
               $mDirectionOrCallableFn = SORT_ASC,

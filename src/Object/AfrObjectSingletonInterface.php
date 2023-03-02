@@ -15,7 +15,6 @@ interface AfrObjectSingletonInterface
     /**
      * The method you use to get the Singleton's instance.
      * @return object
-     * @throws ReflectionException
      */
     public static function getInstance(): object;
 
@@ -35,6 +34,7 @@ interface AfrObjectSingletonInterface
 
     /**
      * The method you use to get a new Singleton's instance from array arguments.
+     * @param array $arguments
      * @return object
      * @throws ReflectionException
      */
