@@ -289,7 +289,8 @@ trait AfrEntityTrait
     {
         $i = 0;
         foreach ($this->getEntityPublicVars() as $sProp => $mVal) {
-            $i += $this->__set($sProp, $this->getDefaultValue($sProp)) ? 1 : 0;
+            $i++;
+            $this->__set($sProp, $this->getDefaultValue($sProp));
         }
         return $i;
     }
@@ -316,7 +317,8 @@ trait AfrEntityTrait
         }
         $i = 0;
         foreach ($aSourceMembers as $sSourceProp) {
-            $i += $this->__set($sSourceProp, $oSourceObject->$sSourceProp) ? 1 : 0;
+            $i++;
+            $this->__set($sSourceProp, $oSourceObject->$sSourceProp);
         }
         return (bool)$i;
     }

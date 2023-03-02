@@ -5,16 +5,15 @@ namespace Autoframe\Core\Http\Cookie\Manager;
 
 use Autoframe\Core\Http\Cookie\AfrHttpCookieEntityAbstract;
 use Autoframe\Core\Http\Request\AfrHttpRequestHttps;
-//use Autoframe\Core\Object\AfrObjectSingletonTrait;
 
-trait AfrHttpCookieTrait
+trait AfrHttpCookieManagerTrait
 {
     use AfrHttpCookieSameSiteTrait;
     use AfrHttpRequestHttps;
-//    use AfrObjectSingletonTrait;
 
     public bool $bUseDomainDotNotationForAllSubdomains = true;
     protected static array $aIndex;
+    private string $sDomainAutodetect;
 
     /**
      * @param string $name
@@ -135,7 +134,7 @@ trait AfrHttpCookieTrait
 
     /**
      * @param array $aNames
-     * @param $asPaths  ['/','/myaccount/']
+     * @param $asPaths ['/','/myaccount/']
      * @param $asDomains ['.example.com']
      * @param string $sSameSite Strict|Lax|None|''
      * @param int $iMaxLimit
@@ -166,7 +165,7 @@ trait AfrHttpCookieTrait
 
     /**
      * @param string $sName
-     * @param $asPaths  ['/','/myaccount/']
+     * @param $asPaths ['/','/myaccount/']
      * @param $asDomains ['.example.com']
      * @param string $sSameSite Strict|Lax|None|''
      * @param int $iMaxLimit
@@ -295,4 +294,33 @@ trait AfrHttpCookieTrait
         );
     }
 
+    /**
+     * @return string
+     */
+    protected function sDomainAutodetect(): string
+    {
+        if (!isset($this->sDomainAutodetect)) {
+            $sHostName = !empty($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+            if ($sHostName && filter_var($sHostName, FILTER_VALIDATE_IP)) {//ip hostname
+                $this->sDomainAutodetect = '';
+            } elseif ($sHostName) {//string hostname
+                $aHostName = explode('.', $sHostName);
+                if (count($aHostName) > 1) {
+                    $aHostName = array_slice($aHostName, -2, 2); //remove all but last 2 segments
+                }
+                $sHostName = '.' . implode('.', $aHostName);
+                $this->sDomainAutodetect = $sHostName;
+            } else {
+                $this->sDomainAutodetect = ''; //fallback to blank and let the browser decide
+            }
+        }
+        return $this->sDomainAutodetect;
+    }
+    /**
+     * @return string[]
+     */
+    protected function getSameSiteOptions(): array
+    {
+        return ['Lax', 'Strict', 'None', ''];
+    }
 }

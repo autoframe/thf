@@ -33,7 +33,7 @@ trait AfrObjectSingletonTrait
      */
     protected function __clone()
     {
-        throw new AutoframeException("Cannot clone a singleton");
+        throw new AutoframeException('Cannot clone a singleton');
     }
 
     /**

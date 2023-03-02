@@ -6,6 +6,7 @@ namespace Autoframe\Core\Http\Cookie;
 use Autoframe\Core\Http\Cookie\Exception\AfrHttpCookieException;
 use Autoframe\Core\Http\Cookie\Manager\AfrHttpCookieSameSiteTrait;
 use Autoframe\Core\Http\Request\AfrHttpRequestHttps;
+use Autoframe\Core\Http\Cookie\Manager\AfrHttpCookieManagerClass;
 
 abstract class AfrHttpCookieEntityAbstract
 {
@@ -66,6 +67,8 @@ abstract class AfrHttpCookieEntityAbstract
      */
     public int $iLifetime = 0;
 
+    protected AfrHttpCookieManagerClass $oCookieManager;
+
     /**
      * @throws AfrHttpCookieException
      */
@@ -80,6 +83,7 @@ abstract class AfrHttpCookieEntityAbstract
         bool   $bSecure = true
     )
     {
+        $this->oCookieManager = AfrHttpCookieManagerClass::getInstance();
         $this->sName = $sName;
         $this->sValue = $sValue;
         $this->iLifetime = $iLifetime;
@@ -90,7 +94,6 @@ abstract class AfrHttpCookieEntityAbstract
         $this->bSecure = $bSecure;
         $this->validateCookieSettings();
     }
-
 
 
     /**
@@ -105,14 +108,14 @@ abstract class AfrHttpCookieEntityAbstract
         if (empty($this->sPath)) {
             $this->sPath = '/';
         }
-        if (!in_array($this->sSameSite, $this->getSameSiteOptions())) {
+        if (!in_array($this->sSameSite, $this->oCookieManager->getSameSiteOptions())) {
             $this->sSameSite = '';
         }
         if ($this->bSecure && !$this->isHttpsRequest()) {
             $this->bSecure = false;
         }
         if ($this->sDomain === '.') {
-            $this->sDomainAutocomplete();
+            $this->sDomain = $this->oCookieManager->sDomainAutodetect();
         }
         if ($this->iLifetime < 0) {
             $this->iLifetime = 2; //set to expire
@@ -120,24 +123,5 @@ abstract class AfrHttpCookieEntityAbstract
 
     }
 
-    /**
-     * @return void
-     */
-    private function sDomainAutocomplete(): void
-    {
-        $sHostName = !empty($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
-        if ($sHostName && filter_var($sHostName, FILTER_VALIDATE_IP)) {//ip hostname
-            $this->sDomain = '';
-        } elseif ($sHostName) {//string hostname
-            $aHostName = explode('.', $sHostName);
-            if (count($aHostName) > 1) {
-                $aHostName = array_slice($aHostName, -2, 2); //remove all but last 2 segments
-            }
-            $sHostName = '.' . implode('.', $aHostName);
-            $this->sDomain = $sHostName;
-        } else {
-            $this->sDomain = ''; //fallback to blank and let the browser decide
-        }
-    }
 
 }
