@@ -27,5 +27,5 @@ interface AfrHttpCookieManagerInterface
      * @param string $samesite
      * @return bool
      */
-    public function deleteCookie(string $name, string $path = '', string $domain = '', bool $secure = false, bool $httponly = false, string $samesite = ''): bool;
+    public function unsetCookie(string $name, string $path = '', string $domain = '', bool $secure = false, bool $httponly = false, string $samesite = ''): bool;
 }

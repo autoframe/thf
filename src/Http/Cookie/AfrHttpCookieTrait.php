@@ -4,14 +4,11 @@ declare(strict_types=1);
 namespace Autoframe\Core\Http\Cookie;
 
 use Autoframe\Core\Http\Cookie\Exception\AfrHttpCookieException;
-use Autoframe\Core\Http\Cookie\Manager\AfrHttpCookieManagerTrait;
-use Autoframe\Core\Http\Cookie\Manager\AfrHttpCookieSameSiteTrait;
 use Autoframe\Core\Http\Request\AfrHttpRequestHttps;
 use Autoframe\Core\Http\Cookie\Manager\AfrHttpCookieManagerClass;
 
-abstract class AfrHttpCookieEntityAbstract
+trait AfrHttpCookieTrait
 {
-    use AfrHttpCookieSameSiteTrait;
     use AfrHttpRequestHttps;
 
     /**
@@ -66,6 +63,8 @@ abstract class AfrHttpCookieEntityAbstract
      */
     public int $iLifetime = 0;
 
+    public bool $bAssumed = false;
+
     /**
      * @throws AfrHttpCookieException
      */
@@ -76,12 +75,17 @@ abstract class AfrHttpCookieEntityAbstract
         string $sPath = '/',
         string $sDomain = '.',
         string $sSameSite = 'Strict',
-        bool   $bHttpOnly = false,
+        bool   $bHttpOnly = true,
         bool   $bSecure = true
     )
     {
         $oCm = $this->getCookieManager();
-        $this->sName = $sName;
+
+        $cname = $oCm->fixCookieName($sName);
+        if (strlen($cname) < 1) {
+            throw new AfrHttpCookieException('Invalid cookie name: "' . $sName . '"');
+        }
+        $this->sName = $cname;
         $this->sValue = $sValue;
         $this->iLifetime = $iLifetime;
         $this->sPath = ($sPath ? $sPath : $oCm->assumePath); # '/'
@@ -112,12 +116,13 @@ abstract class AfrHttpCookieEntityAbstract
         if (empty($this->sPath)) {
             $this->sPath = '/';
         }
-        if (!in_array($this->sSameSite, $this->getCookieManager()->getSameSiteOptions())) {
-            $this->sSameSite = '';
-        }
         if ($this->bSecure && !$this->isHttpsRequest()) {
             $this->bSecure = false;
         }
+        if (!$this->bSecure || !in_array($this->sSameSite, $this->getCookieManager()->getSameSiteOptions())) {
+            $this->sSameSite = '';
+        }
+
         if ($this->sDomain === '.') {
             $this->sDomain = $this->getCookieManager()->domainNameAutodetect();
         }
@@ -149,13 +154,23 @@ abstract class AfrHttpCookieEntityAbstract
         return $bResponse;
     }
 
+    /**
+     * @return bool
+     */
+    public function setIfMissing(): bool
+    {
+        if(!isset($_COOKIE[$this->sName])){
+            return $this->set();
+        }
+        return $this->getCookieManager()->issetIndex($this->sName);
+    }
 
     /**
      * @return bool
      */
     public function unset(): bool
     {
-        return $this->getCookieManager()->deleteCookie(
+        return $this->getCookieManager()->unsetCookie(
             $this->sName,
             $this->sPath,
             $this->sDomain,
@@ -164,6 +179,5 @@ abstract class AfrHttpCookieEntityAbstract
             $this->sSameSite,
         );
     }
-
 
 }

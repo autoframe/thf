@@ -8,7 +8,6 @@ use Autoframe\Core\Object\AfrObjectSingletonAbstractClass;
 class AfrHttpCookieManagerClass extends AfrObjectSingletonAbstractClass  implements AfrHttpCookieManagerInterface
 {
     use AfrHttpCookieManagerTrait;
-
     /**
      * @return AfrHttpCookieManagerClass
      */

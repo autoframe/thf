@@ -3,17 +3,17 @@ declare(strict_types=1);
 
 namespace Autoframe\Core\Http\Cookie\Manager;
 
-use Autoframe\Core\Http\Cookie\AfrHttpCookieEntityAbstract;
-use Autoframe\Core\Http\Cookie\AfrHttpCookieGenericEntity;
+use Autoframe\Core\Http\Cookie\AfrHttpCookie;
+use Autoframe\Core\Http\Cookie\AfrHttpCookieInterface;
 use Autoframe\Core\Http\Cookie\Exception\AfrHttpCookieException;
 use Autoframe\Core\Http\Request\AfrHttpRequestHttps;
 
 trait AfrHttpCookieManagerTrait
 {
-    use AfrHttpCookieSameSiteTrait;
     use AfrHttpRequestHttps;
 
-    public bool $bUseDomainDotNotationForAllSubdomains = true;
+    public bool $bAutoDomainDotNotationForAllSubdomains = false;
+    public bool $bAlwaysSetToMasterDomainRatherThanSubdomain = true;
     private static array $aIndex = [];
     private string $sDomainAutodetect;
 
@@ -27,6 +27,7 @@ trait AfrHttpCookieManagerTrait
      * @param bool $httponly
      * @param string $sameSite lax strict or ''
      * @return bool
+     * @throws AfrHttpCookieException
      */
     public function setCookie(
         string $name,
@@ -39,67 +40,67 @@ trait AfrHttpCookieManagerTrait
         string $sameSite = ''
     ): bool
     {
-        $lifetime = 0;
+        $cname = $this->fixCookieName($name);
+        if (strlen($cname) < 1) {
+            throw new AfrHttpCookieException('Invalid cookie name: "' . $name . '"');
+        }
+        $name = $cname;
+        $aOptions = [
+            'expires' => 0,
+            'path' => $path,
+            'domain' => $domain,
+            'secure' => $secure,
+            'httponly' => $httponly,
+            'samesite' => $sameSite
+        ];
         if (is_array($iExpires_or_aOptions)) {
-            if (isset($iExpires_or_aOptions['samesite'])) {
-                $sameSite = (string)$iExpires_or_aOptions['samesite'];
+            foreach ($iExpires_or_aOptions as $k => $v) {
+                if (isset($aOptions[$k])) {
+                    $aOptions[$k] = $v;
+                }
             }
-            if (isset($iExpires_or_aOptions['httponly'])) {
-                $httponly = (bool)$iExpires_or_aOptions['httponly'];
-            }
-            if (isset($iExpires_or_aOptions['secure'])) {
-                $secure = (bool)$iExpires_or_aOptions['secure'];
-            }
-            if (isset($iExpires_or_aOptions['domain'])) {
-                $domain = (string)$iExpires_or_aOptions['domain'];
-            }
-            if (isset($iExpires_or_aOptions['path'])) {
-                $path = (string)$iExpires_or_aOptions['path'];
-            }
-            if (isset($iExpires_or_aOptions['lifetime'])) {
-                $lifetime = (int)$iExpires_or_aOptions['lifetime'];
-            }
-        } else {
-            $lifetime = (int)$iExpires_or_aOptions;
+            //$aOptions = array_merge($aOptions, $iExpires_or_aOptions);
         }
+        $aOptions['expires'] = $this->fixLifetime($iExpires_or_aOptions);
+        $aOptions['path'] = (string)$aOptions['path'];
+        $this->fixSubdomainAvailability($aOptions['domain']);
+        $aOptions['secure'] = (bool)$aOptions['secure'];
+        $aOptions['httponly'] = (bool)$aOptions['httponly'];
+        $this->correctSameSite($aOptions['samesite'], $aOptions['secure']);
 
-        if ($this->bUseDomainDotNotationForAllSubdomains) {
-            if (
-                $domain &&
-                substr($domain, 0, 1) !== '.' &&
-                !filter_var(explode(':', $domain)[0], FILTER_VALIDATE_IP)
-            ) {
-                $domain = '.' . $domain;
+        if (PHP_VERSION_ID >= 70300) {
+            foreach ($aOptions as $k => $v) {
+                if (empty($v)) {
+                    unset($aOptions[$k]);
+                }
             }
-        }
-        $this->correctSameSiteCookieDirective($sameSite);
-
-        if (strlen($value)) {
-            $_COOKIE[$name] = $value;
-        } elseif (isset($_COOKIE[$name])) {
-            unset($_COOKIE[$name]);
-        }
-
-        if (PHP_VERSION_ID >= 70300 && is_array($iExpires_or_aOptions) && $iExpires_or_aOptions) {
-            //  setcookie(string $name, $value = '', array $options = []): bool
-            return setcookie(
+            $bSetCookie = setcookie(
                 $name,
                 $value,
-                $iExpires_or_aOptions
+                $aOptions
             );
         } else {
-            //  setcookie(string $name, $value = '', $expires_or_options = 0, $path = '', $domain = '', $secure = false, $httponly = false): bool
-            return setcookie(
+            $bSetCookie = setcookie(
                 $name,
                 $value,
-                $lifetime,
-                $path . ($sameSite ? '; samesite=' . $sameSite : ''),
-                $domain,
-                $secure,
-                $httponly
+                $aOptions['expires'],
+                $path . ($aOptions['samesite'] ? '; samesite=' . $aOptions['samesite'] : ''),
+                $aOptions['domain'],
+                $aOptions['secure'],
+                $aOptions['httponly']
             );
         }
+
+        if ($bSetCookie) {
+            if (strlen($value)) {
+                $_COOKIE[$name] = $value;
+            } elseif (isset($_COOKIE[$name])) {
+                unset($_COOKIE[$name]);
+            }
+        }
+        return $bSetCookie;
     }
+
 
     /**
      * @param string $name
@@ -109,31 +110,31 @@ trait AfrHttpCookieManagerTrait
      * @param bool $httponly
      * @param string $samesite
      * @return bool
+     * @throws AfrHttpCookieException
      */
-    public function deleteCookie(string $name,
-                                 string $path = '',
-                                 string $domain = '',
-                                 bool   $secure = false,
-                                 bool   $httponly = false,
-                                 string $samesite = ''
+    public function unsetCookie(string $name,
+                                string $path = '',
+                                string $domain = '',
+                                bool   $secure = false,
+                                bool   $httponly = false,
+                                string $samesite = ''
     ): bool
     {
         $this->unsetIndex($name);
         return $this->setCookie($name, '', 1, $path, $domain, $secure, $httponly, $samesite);
     }
 
+
     /**
-     * Input parameter is forced to Lax Strict None or ''
-     * @param string $sSameSite
-     * @return void
+     * @param string $sName
+     * @return string
      */
-    private function correctSameSiteCookieDirective(string &$sSameSite): void
+    public function fixCookieName(string $sName): string
     {
-        $sSameSite = ucwords(strtolower($sSameSite));
-        if (!in_array($sSameSite, $this->getSameSiteOptions())) {
-            $sSameSite = '';
-        }
+        return str_replace(['=', ',', ';', ' ', "\t", "\r", "\n", "\v", "\f"], '', $sName);
     }
+
+
 
     /**
      * @param array $aNames
@@ -142,6 +143,7 @@ trait AfrHttpCookieManagerTrait
      * @param string $sSameSite Strict|Lax|None|''
      * @param int $iMaxLimit
      * @return int
+     * @throws AfrHttpCookieException
      */
     public function forceExpireAllCookies(
         array  $aNames = [],
@@ -173,6 +175,7 @@ trait AfrHttpCookieManagerTrait
      * @param string $sSameSite Strict|Lax|None|''
      * @param int $iMaxLimit
      * @return int
+     * @throws AfrHttpCookieException
      */
     public function forceExpireCookie(
         string $sName,
@@ -183,7 +186,7 @@ trait AfrHttpCookieManagerTrait
     ): int
     {
         $bSecure = $this->isHttpsRequest();
-        $this->correctSameSiteCookieDirective($sSameSite);
+        $this->correctSameSite($sSameSite, $bSecure);
 
         if (is_string($asPaths) && $asPaths) {
             $asPaths = [$asPaths];
@@ -201,7 +204,7 @@ trait AfrHttpCookieManagerTrait
         $i = 0;
         foreach ($asDomains as $sDomain) {
             foreach ($asPaths as $sPath) {
-                $this->deleteCookie(
+                $this->unsetCookie(
                     $sName,
                     $sPath,
                     $sDomain,
@@ -221,7 +224,7 @@ trait AfrHttpCookieManagerTrait
     /**
      * @return string[]
      */
-    protected function getPathVariations(): array
+    private function getPathVariations(): array
     {
         $sPath = !empty($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
 
@@ -247,9 +250,9 @@ trait AfrHttpCookieManagerTrait
     }
 
     /**
-     * @return array|string[]
+     * @return string[]
      */
-    protected function getDomainVariations(): array
+    private function getDomainVariations(): array
     {
         $sFullHostname = !empty($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
         if (!$sFullHostname || filter_var(explode(':', $sFullHostname)[0], FILTER_VALIDATE_IP)) {
@@ -262,11 +265,11 @@ trait AfrHttpCookieManagerTrait
             $sWalkThrough = '.' . $aFullHostname[$iCountHostParts - 1];
             for ($i = $iCountHostParts - 2; $i >= 0; $i--) {
                 $sWalkThrough = $aFullHostname[$i] . $sWalkThrough;
-                if (!$this->bUseDomainDotNotationForAllSubdomains) {
+                if (!$this->bAutoDomainDotNotationForAllSubdomains) {
                     $aHostNames[] = $sWalkThrough;
                 }
                 $sWalkThrough = '.' . $sWalkThrough;
-                if ($this->bUseDomainDotNotationForAllSubdomains) {
+                if ($this->bAutoDomainDotNotationForAllSubdomains) {
                     $aHostNames[] = $sWalkThrough;
                 }
             }
@@ -280,10 +283,11 @@ trait AfrHttpCookieManagerTrait
     /**
      * @return string
      */
-    protected function domainNameAutodetect(): string
+    public function domainNameAutodetect(): string
     {
         if (!isset($this->sDomainAutodetect)) {
-            $sHostName = !empty($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+            //$sHostName = !empty($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+            $sHostName = !empty($_SERVER['HTTP_HOST']) ? explode(':', $_SERVER['HTTP_HOST'])[0] : '';
             if ($sHostName && filter_var($sHostName, FILTER_VALIDATE_IP)) {//ip hostname
                 $this->sDomainAutodetect = '';
             } elseif ($sHostName) {//string hostname
@@ -291,7 +295,10 @@ trait AfrHttpCookieManagerTrait
                 if (count($aHostName) > 1) {
                     $aHostName = array_slice($aHostName, -2, 2); //remove all but last 2 segments
                 }
-                $sHostName = '.' . implode('.', $aHostName);
+                $sHostName = implode('.', $aHostName);
+                if (count($aHostName) > 1 && $this->bAutoDomainDotNotationForAllSubdomains) {
+                    $sHostName = '.' . $sHostName;
+                }
                 $this->sDomainAutodetect = $sHostName;
             } else {
                 $this->sDomainAutodetect = ''; //fallback to blank and let the browser decide
@@ -303,22 +310,22 @@ trait AfrHttpCookieManagerTrait
     /**
      * @return string[]
      */
-    protected function getSameSiteOptions(): array
+    public function getSameSiteOptions(): array
     {
         return ['Lax', 'Strict', 'None', ''];
     }
 
     /**
-     * @param AfrHttpCookieEntityAbstract $oCookie
+     * @param AfrHttpCookieInterface $oCookie
      * @return void
      */
-    public function setIndex(AfrHttpCookieEntityAbstract $oCookie): void
+    public function setIndex(AfrHttpCookieInterface $oCookie): void
     {
         self::$aIndex[$oCookie->sName] = $oCookie;
     }
 
     /**
-     * @return AfrHttpCookieEntityAbstract[]
+     * @return AfrHttpCookieInterface[]
      */
     public function getAllIndexes(): array
     {
@@ -346,27 +353,29 @@ trait AfrHttpCookieManagerTrait
     }
 
     /**
-     * @return AfrHttpCookieEntityAbstract[]
+     * @return AfrHttpCookieInterface[]
      * @throws AfrHttpCookieException
      */
-    public function assumeAllHttpCookies(){
-        if(!empty($_COOKIE)){
-            foreach($_COOKIE as $sCookieName=>$sVal){
+    public function assumeAllHttpCookies(): array
+    {
+        if (!empty($_COOKIE)) {
+            foreach ($_COOKIE as $sCookieName => $sVal) {
                 $this->assumeHttpCookie($sCookieName);
             }
         }
         return $this->getAllIndexes();
     }
+
     /**
      * @param string $sCookieName
-     * @return false|AfrHttpCookieEntityAbstract
+     * @return false|AfrHttpCookieInterface
      * @throws AfrHttpCookieException
      */
     public function assumeHttpCookie(string $sCookieName)
     {
         if (isset($_COOKIE[$sCookieName]) && $_COOKIE[$sCookieName]) {
             if (!$this->issetIndex($sCookieName)) {
-                self::$aIndex[$sCookieName] = new AfrHttpCookieGenericEntity(
+                $oCookie = new AfrHttpCookie(
                     $sCookieName,
                     $_COOKIE[$sCookieName],
                     $this->assumeLifetime,
@@ -376,6 +385,8 @@ trait AfrHttpCookieManagerTrait
                     $this->assumeHttpOnly,
                     $this->assumeSecure,
                 );
+                $oCookie->bAssumed = true;
+                self::$aIndex[$sCookieName] = $oCookie;
             }
             return self::$aIndex[$sCookieName];
         }
@@ -422,4 +433,68 @@ trait AfrHttpCookieManagerTrait
      */
     public int $assumeLifetime = 0;
 
+    /**
+     * @param $iExpires_or_aOptions
+     * @return int
+     */
+    private function fixLifetime($iExpires_or_aOptions): int
+    {
+        $lifetime = 0;
+        if (isset($iExpires_or_aOptions['expires'])) {
+            $lifetime = (int)$iExpires_or_aOptions['expires'];
+        } elseif (is_numeric($iExpires_or_aOptions)) {
+            $lifetime = (int)$iExpires_or_aOptions;
+        }
+        return $lifetime < 0 ? 2 : $lifetime;
+    }
+
+
+
+    /**
+     * @param $sDomain
+     * @return void
+     */
+    private function fixSubdomainAvailability(&$sDomain): void
+    {
+        if (!is_string($sDomain)) {
+            $sDomain = (string)$sDomain;
+        }
+        $sDomain = explode(':', $sDomain)[0]; //get rig of port
+        $bIsIp = filter_var($sDomain, FILTER_VALIDATE_IP);
+        if ($this->bAlwaysSetToMasterDomainRatherThanSubdomain && $sDomain && !$bIsIp) {
+            $aFullHostname = explode('.', trim($sDomain, '.'));
+            $iCountHostParts = count($aFullHostname);
+            if ($iCountHostParts > 1) {
+                $sDomain = $aFullHostname[$iCountHostParts - 2] . '.' . $aFullHostname[$iCountHostParts - 1];
+            }
+        }
+        if ($this->bAutoDomainDotNotationForAllSubdomains) {
+            if (
+                $sDomain &&
+                substr($sDomain, 0, 1) !== '.' &&
+                substr_count($sDomain, '.') > 1 &&
+                !$bIsIp
+            ) {
+                $sDomain = '.' . $sDomain;
+            }
+        }
+    }
+
+    /**
+     * Input parameter is forced to Lax Strict None or ''
+     * @param $sSameSite
+     * @param bool $bSecure
+     * @return void
+     */
+    private function correctSameSite(&$sSameSite, bool $bSecure): void
+    {
+        if (!$bSecure) {
+            $sSameSite = '';
+        } else {
+            $sSameSite = ucwords(strtolower((string)$sSameSite));
+            if (!in_array($sSameSite, $this->getSameSiteOptions())) {
+                $sSameSite = '';
+            }
+        }
+    }
 }

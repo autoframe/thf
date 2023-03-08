@@ -1,4 +1,6 @@
 {
+
+    "TODO_SCHEMA_ORG": "https://github.com/spatie/schema-org",
     "type": "library",
     "localDEV": "composer dump-autoload -o",
     "name": "autoframe/core",

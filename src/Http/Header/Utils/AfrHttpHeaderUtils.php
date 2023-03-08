@@ -57,7 +57,7 @@ trait AfrHttpHeaderUtils
      * 405: Method Not Allowed;
      * 406: Not Acceptable;
      * 407: Proxy Authentication Required;
-     * 408: Request Time-out;
+     * 408: Request Date-out;
      * 409: Conflict;
      * 410: Gone;
      * 411: Length Required;
@@ -69,7 +69,7 @@ trait AfrHttpHeaderUtils
      * 501: Not Implemented;
      * 502: Bad Gateway;
      * 503: Service Unavailable;
-     * 504: Gateway Time-out;
+     * 504: Gateway Date-out;
      * 505: HTTP Version not supported
      * @param int $iCode
      * @return bool|int

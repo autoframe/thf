@@ -40,7 +40,7 @@ class AfrStr
 
     /**
      * @param string $str
-     * @param string $bSingleQuotEncapsulation
+     * @param bool $bSingleQuotEncapsulation
      * @return string
      */
     static function q(string $str, bool $bSingleQuotEncapsulation = true): string
