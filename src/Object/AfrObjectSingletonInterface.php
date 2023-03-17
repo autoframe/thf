@@ -2,13 +2,13 @@
 
 namespace Autoframe\Core\Object;
 
-use Autoframe\Core\Exception\AutoframeException;
+use Autoframe\Core\Exception\AfrException;
 use ReflectionException;
 
 interface AfrObjectSingletonInterface
 {
     /**
-     * @throws AutoframeException
+     * @throws AfrException
      */
     public function __wakeup();
 

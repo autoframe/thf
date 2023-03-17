@@ -4,7 +4,7 @@ namespace Autoframe\Core\Captcha\Classic;
 
 
 use Autoframe\Core\Captcha\AfrCaptcha;
-use Autoframe\Core\Exception\AutoframeException;
+use Autoframe\Core\Exception\AfrException;
 use Autoframe\Core\FileSystem\Exception\AfrFileSystemException;
 use Autoframe\Core\FileSystem\Traversing\Exception\AfrFileSystemTraversingException;
 use Autoframe\Core\Object\AfrObjectSingletonTrait;
@@ -116,7 +116,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     function imgVersion(): int
     {
         if (empty($this->ImgVersion)) {
-            throw new AutoframeException('Invalid image version configured in class ' . __CLASS__ . '!');
+            throw new AfrException('Invalid image version configured in class ' . __CLASS__ . '!');
         }
         return $this->ImgVersion;
     }
@@ -126,7 +126,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     {
         $aFonts = $this->getFontsFromDir($this->sFontsDir);
         if (!$aFonts) {
-            throw new AutoframeException('No font files found for Captcha render!');
+            throw new AfrException('No font files found for Captcha render!');
         }
         return $aFonts;
     }
@@ -222,7 +222,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
         $session = AfrSessionFactory::getInstance();
         if (!$session->session_started()) {
             if (!$session->session_start()) {
-                throw new AutoframeException('Session could not be started!');
+                throw new AfrException('Session could not be started!');
             }
         }
         return true;
@@ -253,7 +253,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     private function flushImage(string $sCode)
     {
         if (headers_sent()) {
-            throw new AutoframeException('Image print error because headers are already sent!');
+            throw new AfrException('Image print error because headers are already sent!');
         }
         header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
         header('Pragma: no-cache');

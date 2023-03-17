@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Autoframe\Core\Object;
 
-use Autoframe\Core\Exception\AutoframeException;
+use Autoframe\Core\Exception\AfrException;
 use ReflectionClass;
 use ReflectionException;
 use function func_get_args;
@@ -29,19 +29,19 @@ trait AfrObjectSingletonTrait
 
     /**
      * Cloning and unserialization are not permitted for singletons.
-     * @throws AutoframeException
+     * @throws AfrException
      */
     protected function __clone()
     {
-        throw new AutoframeException('Cannot clone a singleton');
+        throw new AfrException('Cannot clone a singleton');
     }
 
     /**
-     * @throws AutoframeException
+     * @throws AfrException
      */
     public function __wakeup()
     {
-        throw new AutoframeException("Cannot unserialize singleton");
+        throw new AfrException("Cannot unserialize singleton");
     }
 
 
@@ -59,14 +59,7 @@ trait AfrObjectSingletonTrait
             // method is called on the subclass, we want an instance of that
             // subclass to be created here.
             return self::$instances[$subclass] = new static();
-        /*    $arguments = func_get_args();
-
-            if ($arguments) {
-                return self::newInstanceArrayOfArgs($arguments);
-            } else {
-                return self::$instances[$subclass] = new static();
-            }
-        */
+            // TODO adaugat aici apply afr config daca este instanta de interfata sau trait sau clasa configurabila
         }
         return self::$instances[$subclass];
     }

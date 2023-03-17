@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 namespace Autoframe\Core\Entity\Exception;
-use Autoframe\Core\Exception\AutoframeException;
+use Autoframe\Core\Exception\AfrException;
 
-class AfrEntityException  extends AutoframeException
+class AfrEntityException  extends AfrException
 {
 
 }

@@ -54,7 +54,7 @@ class AfrSessionFactory extends AfrObjectAbstractSingletonFactory
 
     /**
      * @return object
-     * @throws \Autoframe\Core\Exception\AutoframeException
+     * @throws \Autoframe\Core\Exception\AfrException
      */
     final public static function getInstance(): object
     {

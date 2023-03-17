@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 namespace Autoframe\Core\FileSystem\Exception;
-use Autoframe\Core\Exception\AutoframeException;
+use Autoframe\Core\Exception\AfrException;
 
-class AfrFileSystemException extends AutoframeException
+class AfrFileSystemException extends AfrException
 {
 
 }

@@ -1,9 +1,9 @@
 <?php
 
 namespace Autoframe\Core\Http\Exception;
-use Autoframe\Core\Exception\AutoframeException;
+use Autoframe\Core\Exception\AfrException;
 
-class AfrHttpException extends AutoframeException
+class AfrHttpException extends AfrException
 {
 
 }

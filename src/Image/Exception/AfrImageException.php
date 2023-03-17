@@ -1,9 +1,9 @@
 <?php
 
 namespace Autoframe\Core\Image\Exception;
-use Autoframe\Core\Exception\AutoframeException;
+use Autoframe\Core\Exception\AfrException;
 
-class AfrImageException extends AutoframeException
+class AfrImageException extends AfrException
 {
 
 }

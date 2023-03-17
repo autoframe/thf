@@ -3,7 +3,7 @@
 
 namespace Autoframe\Core\Img;
 
-use Autoframe\Core\Exception\AutoframeException;
+use Autoframe\Core\Exception\AfrException;
 
 trait StaticWH
 {
@@ -20,7 +20,7 @@ trait StaticWH
         if (isset(self::$iImgWidth)) {
             return self::$iImgWidth;
         }
-        throw new AutoframeException('ImgWidth is not set');
+        throw new AfrException('ImgWidth is not set');
     }
 
     static function imgWidth(int $iImgWidth = 0): int
@@ -45,7 +45,7 @@ trait StaticWH
         if (isset(self::$iImgHeight)) {
             return self::$iImgHeight;
         }
-        throw new AutoframeException('ImgHeight is not set');
+        throw new AfrException('ImgHeight is not set');
     }
 
     static function imgHeight(int $iImgHeight = 0): int
