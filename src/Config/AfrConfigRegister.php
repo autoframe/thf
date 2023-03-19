@@ -51,6 +51,28 @@ final class AfrConfigRegister extends AfrObjectSingletonAbstractClass
     }
 
     /**
+     * @param string $sRegKey
+     * @return array
+     */
+    public function getDataConfig(string $sRegKey): array
+    {
+        return (isset($this->aRegistry[$sRegKey]) && $this->aRegistry[$sRegKey] instanceof AfrConfig) ?
+            $this->aRegistry[$sRegKey]->getData() :
+            [];
+    }
+
+    /**
+     * @param string $sRegKey
+     * @return AfrConfig|null
+     */
+    public function getConfigByKey(string $sRegKey): ?AfrConfig
+    {
+        return (isset($this->aRegistry[$sRegKey]) && $this->aRegistry[$sRegKey] instanceof AfrConfig) ?
+            $this->aRegistry[$sRegKey] :
+            null;
+    }
+
+    /**
      * @param object $oClassInstance
      * @return array
      */

@@ -7,61 +7,102 @@ namespace Autoframe\Core\Config;
 use ReflectionClass;
 use ReflectionException;
 use Autoframe\Core\Config\Exception\AfrConfigException;
+use ReflectionMethod;
+
 class AfrConfigFactory
 {
     /**
      * @throws ReflectionException
      * @throws AfrConfigException
      */
-    public static function makeInstanceFromNsClass(string $sNamespaceClass)
+    public static function makeInstanceFromNsClass(string $sNamespaceClass, bool $bForce = false)
     {
-        if(!self::checkClassExists($sNamespaceClass)){
+        if (!self::checkClassExists($sNamespaceClass)) {
             return false;
         }
         $aConstructorArgs = [];
-        $aAfrConfigs = AfrConfigRegister::getInstance()->getStaticConfig($sNamespaceClass);
-        foreach ($aAfrConfigs as $oAfrConfig){
-            if($oAfrConfig->getNamespaceAndClassOrTraitOrInterfaceOrKey() === $sNamespaceClass){
+        foreach (AfrConfigRegister::getInstance()->getStaticConfig($sNamespaceClass) as $oAfrConfig) {
+            if ($oAfrConfig->getNamespaceAndClassOrTraitOrInterfaceOrKey() === $sNamespaceClass) {
                 $aConstructorArgs = $oAfrConfig->getConstructorArgs();
                 break;
             }
         }
-        if(empty($aConstructorArgs)){
+        if (empty($aConstructorArgs)) {
             $oNewObject = new $sNamespaceClass();
-        }
-        else{
-            //$oNewObject = new $sNamespaceClass($aConstructorArgs);
+        } else {
             $oNewObject = (new ReflectionClass($sNamespaceClass))->newInstanceArgs($aConstructorArgs);
         }
-        if(
+        if (
             $oNewObject instanceof AfrConfigurableInstanceInterface ||
-            is_callable([$oNewObject,'applyAfrInstanceConfig'], true)
-        ){
-            $oNewObject->applyAfrInstanceConfig();
+            is_callable([$oNewObject, 'applyAfrInstanceConfig'], true)
+        ) {
+            $oNewObject->applyAfrInstanceConfig($bForce);
+        } else {
+            throw new AfrConfigException('Class ' . $sNamespaceClass . ' does not implement method: applyAfrInstanceConfig');
         }
-        else{
-            throw new AfrConfigException('Class '.$sNamespaceClass.' does not implement method: applyAfrInstanceConfig');
-        }
-        print_r($oNewObject);
-        //print_r($aAfrConfigs);
-        //die('XXXXXXX'.$sNamespaceClass.'XXXXXXXXXX');
-
         return $oNewObject;
     }
-    public static function makeSingletonFromNsClass(string $sNamespaceClass, array $aNewSingletonParams = [])
+
+    /**
+     * @param string $sNamespaceClass
+     * @param bool $bForce
+     * @return AfrConfigurableInstanceInterface|false|mixed
+     * @throws AfrConfigException
+     */
+    public static function getConfiguredSingletonFromNsClass(string $sNamespaceClass, bool $bForce = false)
     {
-        return 'obbbJEct!';
+        if (!self::checkClassExists($sNamespaceClass)) {
+            return false;
+        }
+        if (
+            !method_exists($sNamespaceClass, 'getInstance') ||
+            !((new ReflectionMethod($sNamespaceClass, 'getInstance'))->isStatic())
+        ) {
+            throw new AfrConfigException('Class ' . $sNamespaceClass . ' does not implement static method: getInstance');
+        }
+        $oSingleton = forward_static_call_array(
+            [$sNamespaceClass, 'getInstance'],
+            [$bForce]
+        );
+        if (
+            $oSingleton instanceof AfrConfigurableInstanceInterface ||
+            is_callable([$oSingleton, 'applyAfrInstanceConfig'], true)
+        ) {
+            $oSingleton->applyAfrInstanceConfig($bForce);
+        } else {
+            throw new AfrConfigException('Class ' . $sNamespaceClass . ' does not implement method: applyAfrInstanceConfig');
+        }
+        return $oSingleton;
     }
-    public static function makeStaticFromNsClass(string $sNamespaceClass)
+
+    /**
+     * @param string $sNamespaceClass
+     * @param bool $bForce
+     * @return bool|int
+     * @throws AfrConfigException
+     */
+    public static function applyStaticConfigToNsClass(string $sNamespaceClass, bool $bForce = false)
     {
-        return 'obbbJEct!';
+        if (!self::checkClassExists($sNamespaceClass)) {
+            return false;
+        }
+        if (
+            !method_exists($sNamespaceClass, 'applyAfrInstanceConfigStatic') ||
+            !((new ReflectionMethod($sNamespaceClass, 'applyAfrInstanceConfigStatic'))->isStatic())
+        ) {
+            throw new AfrConfigException('Class ' . $sNamespaceClass . ' does not implement static method: applyAfrInstanceConfigStatic');
+        }
+        return forward_static_call_array(
+            [$sNamespaceClass, 'applyAfrInstanceConfigStatic'],
+            [$bForce]
+        );
     }
 
     /**
      * @param string $sNamespaceClass
      * @return bool
      */
-    private static function checkClassExists(string $sNamespaceClass):bool
+    private static function checkClassExists(string $sNamespaceClass): bool
     {
         return class_exists($sNamespaceClass);
     }

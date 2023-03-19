@@ -10,4 +10,11 @@ interface AfrConfigurableInstanceInterface
      * @return int
      */
     public function applyAfrInstanceConfig(bool $bForce = false): int;
+
+    /**
+     * @param bool $bForce
+     * @return int
+     */
+    public static function applyAfrInstanceConfigStatic(bool $bForce = false): int;
+
 }

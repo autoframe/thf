@@ -14,7 +14,7 @@ namespace Autoframe\Core\Config;
  * $config = Config::getInstance();
  * $config->setValue('DEBUG', 1);
  */
-class ThfConfig extends thfSingleton x
+class ThfConfig extends thfSingleton
 {
     private $hashmap = ['DEBUG' => 1];
 

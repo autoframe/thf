@@ -18,7 +18,12 @@ class AfrDate implements AfrConfigurableInstanceInterface
         print_r($a);
     }
 
+    public static $staticPropx;
+
     private function test($sX){
+        echo "\n  \n\n  $sX\n\n  \n\n  \n";
+    }
+    private static function testStatic($sX){
         echo "\n  \n\n  $sX\n\n  \n\n  \n";
     }
 }
