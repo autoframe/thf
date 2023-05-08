@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autoframe\Core\Captcha;
@@ -6,6 +7,7 @@ namespace Autoframe\Core\Captcha;
 //use Autoframe\Core\Object\AfrObjectSingleton;
 use Autoframe\Core\Object\AfrObjectSingletonTrait;
 use Autoframe\Core\String\AfrStr;
+use Autoframe\Components\Arr\Merge\AfrArrMergeProfileClass;
 
 abstract class AfrCaptcha //extends AfrObjectSingleton
 {
@@ -20,6 +22,12 @@ abstract class AfrCaptcha //extends AfrObjectSingleton
         $this->mergeParams($aParams);
     }
 
+    public function mergeParams(array $aParams): object
+    {
+        $this->aParams = (new AfrArrMergeProfileClass())->arrayMergeProfile($this->aParams, $aParams);
+        return $this;
+    }
+
     public function getParams(): array
     {
         return $this->aParams;
@@ -31,11 +39,7 @@ abstract class AfrCaptcha //extends AfrObjectSingleton
         return $this;
     }
 
-    public function mergeParams(array $aParams): object
-    {
-        $this->aParams = AfrStr::array_merge_recursive_settings($this->aParams, $aParams);
-        return $this;
-    }
+
 
     abstract public function getHtmlCaptcha(): string;
 

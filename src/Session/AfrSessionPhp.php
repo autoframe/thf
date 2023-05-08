@@ -1,10 +1,9 @@
 <?php
-
+declare(strict_types=1);
 
 namespace Autoframe\Core\Session;
 
-
-use Autoframe\Core\Exception\AfrException;
+use Autoframe\Components\Exception\AfrException;
 use Autoframe\Core\Object\AfrObjectSingletonTrait;
 use function headers_sent;
 use function is_callable;

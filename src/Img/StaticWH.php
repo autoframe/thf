@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autoframe\Core\Img;
 
-use Autoframe\Core\Exception\AfrException;
+use Autoframe\Components\Exception\AfrException;
 
 trait StaticWH
 {

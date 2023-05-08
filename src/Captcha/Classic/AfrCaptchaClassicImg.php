@@ -1,23 +1,24 @@
 <?php
+declare(strict_types=1);
 
 namespace Autoframe\Core\Captcha\Classic;
 
 
 use Autoframe\Core\Captcha\AfrCaptcha;
-use Autoframe\Core\Exception\AfrException;
+use Autoframe\Components\Exception\AfrException;
 use Autoframe\Core\FileSystem\Exception\AfrFileSystemException;
 use Autoframe\Core\FileSystem\Traversing\Exception\AfrFileSystemTraversingException;
 use Autoframe\Core\Object\AfrObjectSingletonTrait;
 use Autoframe\Core\Session\AfrSessionFactory;
 use Autoframe\Core\Session\AfrSessionPhp;
-use Autoframe\Core\FileSystem\Traversing\AfrDirTraversingFileList;
+use Autoframe\Core\FileSystem\Traversing\AfrDirTraversingFileListTrait;
 
 
 abstract class AfrCaptchaClassicImg extends AfrCaptcha
 {
     use AfrObjectSingletonTrait;
     use AfrCaptchaClassicTrait;
-    use AfrDirTraversingFileList;
+    use AfrDirTraversingFileListTrait;
 
     const FONTFACTORSPLIT = '_ff';
     const FONTCACHEFILE = '_cache.json';
@@ -283,7 +284,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     {
         list($minLen, $maxLen, $v) = $this->codeLength();
         $password = '';
-        srand((double)microtime() * 1000000);
+        srand(ceil(microtime(true) * 1000000));
         $iLength = rand($minLen, $maxLen);
         if ($v === 2) {
             //            $possible = '23456789bcdfghkmnpqrsuvwxyz';

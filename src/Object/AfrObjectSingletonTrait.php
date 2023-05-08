@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Autoframe\Core\Object;
 
-use Autoframe\Core\Exception\AfrException;
+use Autoframe\Components\Exception\AfrException;
 use ReflectionClass;
 use ReflectionException;
 use function func_get_args;
@@ -65,39 +65,32 @@ trait AfrObjectSingletonTrait
     }
 
     /**
-     * The method you use to get a new Singleton's instance.
+     * The method you use to get a new clean Singleton's instance.
      * @return object
      * @throws ReflectionException
      */
-    public static function newInstance(): object
+    public static function renewInstance(): object
     {
         $arguments = func_get_args();
-        if ($arguments) {
-            return self::newInstanceArrayOfArgs($arguments);
+        if (!empty($arguments)) {
+            return self::renewInstanceArrayOfArgs($arguments);
         } else {
-            return self::$instances[ static::class ] = new static();
+            return self::$instances[static::class] = new static();
         }
     }
 
     /**
-     * The method you use to get a new Singleton's instance from inline arguments.
-     * @return object
-     * @throws ReflectionException
-     */
-    public static function newInstanceArgs(): object
-    {
-        return self::newInstanceArrayOfArgs(func_get_args());
-    }
-
-    /**
-     * The method you use to get a new Singleton's instance from array arguments.
+     * The method you use to get a new Singleton's instance from an array of arguments.
      * @param array $arguments
      * @return self
      * @throws ReflectionException
      */
-    public static function newInstanceArrayOfArgs(array $arguments):object
+    public static function renewInstanceArrayOfArgs(array $arguments): object
     {
         $subclass = static::class;
+        if(empty($arguments)){
+            return self::renewInstance();
+        }
         return self::$instances[$subclass] =
             (new ReflectionClass($subclass))->newInstanceArgs($arguments);
     }

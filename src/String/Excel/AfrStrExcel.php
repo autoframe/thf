@@ -1,9 +1,8 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autoframe\Core\String\Excel;
-
-//use Autoframe\Core\Exception\Exception;
 
 class AfrStrExcel
 {
@@ -13,10 +12,10 @@ class AfrStrExcel
      */
     public static function num2excel(int $n): string
     {
-        if($n<0){
+        if ($n < 0) {
             $n = abs($n);
         }
-        for ($r = ""; $n >= 0; $n = intval($n / 26) - 1) {
+        for ($r = ''; $n >= 0; $n = intval($n / 26) - 1) {
             $r = chr($n % 26 + 0x41) . $r;
         }
         return $r;

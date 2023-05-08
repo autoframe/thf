@@ -15,9 +15,11 @@ trait AfrHttpLog
     {
         //TODO de testat!
         print_r($this->getMinifiedBacktrace(1));
+        //AfrError::getMinifiedBacktrace;
     }
 
     /**
+     * AfrError::getMinifiedBacktrace;
      * @param int $iRemoveLastNLevels
      * @return array
      */

@@ -1,6 +1,6 @@
 <?php
 
-
+$t1 = microtime(true);
 require_once(__DIR__ . '/vendor/autoload.php');
 require_once(__DIR__ . '/src/_demo_config.php');
 
@@ -20,12 +20,94 @@ use Autoframe\Core\Http\CurlSimple\AfrHttpCurlSimple;
 use Autoframe\Core\Entity\AfrEntityTest;
 use Autoframe\Core\Entity\AfrEntityTestx;
 use Autoframe\Core\Http\Cookie\Manager\AfrHttpCookieManagerClass;
+use Autoframe\Core\Socket\AfrCacheSocketAbstract;
+use Autoframe\Core\Socket\AfrCacheSocketClient;
+use Autoframe\Core\Socket\AfrCacheSocketConfig;
 
-new AfrBlackBody();
+
+//new AfrBlackBody();
+$t2 = microtime(true);
+
+$oAfrCacheSocketClient = AfrCacheSocketClient::getInstance();
+$oAfrCacheSocketConfig = $oAfrCacheSocketClient->selectSocketConfig(AfrCacheSocketAbstract::DEFAULT_CONFIG_NAME);
+$aFailed = $aConfirmed = [];
+//$r = $oAfrCacheSocketClient->sendRequest('shutdown');die('shutdown');
+
+set_time_limit(600);
+$recvSv = 0;
+for ($i = 0; $i < 1000; $i++) {
+    if($i%20===19){
+    //    usleep(35);
+    }
+    //$r = $oAfrCacheSocketClient->sendRequest($oAfrCacheSocketClient::generateRandomText());
+    $sMd5 = md5(microtime() . mt_rand(34535, 5636465475));
+    $sSend = $sMd5.AfrCacheSocketClient::generateRandomText(rand(4, rand(15,130)));
+    //echo strlen($sSend); die;
+    $r = $oAfrCacheSocketClient->sendRequest($sSend);
+    $iSent = strlen($sSend);
+    $rOneLine = implode("---------------\n", $r);
+    $iLenOneLine = strlen($rOneLine);
+    $sR = explode('~~', $rOneLine);
+    $RqId = $sR[0];
+    $sReceived = @$sR[1];
+    $sLenReceived = @$sR[2];
+    $sMessage = @$sR[3];
+    $iTotalSvSent = (int)str_replace('@', '', substr($rOneLine, -32, 32));
+
+    $cl = ($iSent - $sLenReceived);
+    $sv = ($iTotalSvSent - $iLenOneLine);
+
+
+    $sConfirmedText = " $RqId Sent: " . round($iSent / 1024, 2) .
+        " KB; Received Sv: " . round($sLenReceived / 1024, 2) .
+        " KB; Sent Sv: " . round($iTotalSvSent / 1024, 2) .
+        " KB; Replied back:" . round($iLenOneLine / 1024, 2) . ' KB ' . " ~$cl~$sv~$iLenOneLine~ ";
+    $recvSv+=$iLenOneLine;
+    if ($cl) {
+        $sConfirmedText .= " |CL:$iSent:$iLenOneLine";
+    }
+
+
+    if (isset($aConfirmed[$sMd5])) {
+        $aConfirmed[$sMd5] .= $sConfirmedText;
+        $aFailed[$sMd5] = $aConfirmed[$sMd5];
+    } else {
+        $aConfirmed[$sMd5] = $sConfirmedText;
+    }
+    if ($cl || $sv || $iLenOneLine === 0 || $sMd5!=$sReceived) {
+        $aFailed[$sMd5] = $sConfirmedText;
+    }
+    //print_r("$RqId\n");
+
+    //
+    //echo "---------------\n";
+}
+//$r = $oAfrCacheSocketClient->sendRequest('shutdown');
+//die($sSend);
+$t3 = microtime(true);
+echo 'Replied Total:' . round($recvSv / 1024/1024, 2) . ' MB'.PHP_EOL;
+echo 'Total RQ: ' . round(($t3-$t2)*1000,0) . 'msec'.PHP_EOL;
+echo 'Average RQ: ' . round(($t3-$t2)*1000/$i,2) . ' average msec'.PHP_EOL;
+
+echo 'Confirmed:';
+print_r($aConfirmed);
+echo "\n";
+echo 'Failed:';
+print_r($aFailed);
+if (!empty($oAfrCacheSocketConfig->aErrors) || $oAfrCacheSocketConfig->fFailedToConnect) {
+    print_r(implode("\n", array_unique($oAfrCacheSocketConfig->aErrors)) . "\n");
+    //    break;
+}
+//print_r($oAfrCacheSocketConfig);
+/*
+print_r($r);
+print_r($oAfrCacheSocketConfig->aErrors);
+print_r($oAfrCacheSocketClient);*/
+die;
 
 /*
-include ('src/FileSystem/BackupBPG/PhpBackupClass.php');
-$oBkp = new PhpBackupClass(
+include ('src/FileSystem/BackupBPG/Autoframe\Core\BackupBPG\PhpBackupClass.php');
+$oBkp = new Autoframe\Core\BackupBPG\PhpBackupClass(
     __DIR__.'/src/Arr',
     __DIR__.'/Bkp_test',
 );
@@ -40,22 +122,22 @@ $oDay = new AfrDateDayLanguageFactory();
 //print_r($oDay->getDayNames());
 $oMonth = new AfrDateMonthLanguageFactory();
 //print_r($oMonth->getMonthNames());
-AfrDate::class;
+//AfrDate::class;
 $oCfg = new AfrConfig('Autoframe\Core\Date\AfrDate');
 $oCfg->
-    assignConstructorArgs(['constructor arg1'])->
-    assignPreventExistenceErrors(true)->
-    assignData(['xx','data'])->
-    assignProperties(['prop1'=>3])->
-    assignMethod('test',['arg1 inline echo'])->
-    assignStaticProperties(['staticPropx'=>'valY'])->
-    assignConstants(['GCCCCC'=>3])->
-    assignStaticMethod('testStatic',['st testStatic'])->defineConstants();
+assignConstructorArgs(['constructor arg1'])->
+assignPreventExistenceErrors(true)->
+assignData(['xx', 'data'])->
+assignProperties(['prop1' => 3])->
+assignMethod('test', ['arg1 inline echo'])->
+assignStaticProperties(['staticPropx' => 'valY'])->
+assignConstants(['GCCCCC' => 3])->
+assignStaticMethod('testStatic', ['st testStatic'])->defineConstants();
 //print_r($oCfg);
 AfrConfigRegister::getInstance()->registerConfig($oCfg);
-$oNew = AfrConfigFactory::makeInstanceFromNsClass('Autoframe\Core\Date\AfrDate',false);
+$oNew = AfrConfigFactory::makeInstanceFromNsClass('Autoframe\Core\Date\AfrDate', false);
 $oCfg2 = new AfrConfig('Autoframe\Core\Date\AfrDate');
-$oCfg2->assignConstants(['GCCCCCX'=>998])->defineConstants();
+$oCfg2->assignConstants(['GCCCCCX' => 998])->defineConstants();
 print_r(AfrConfigRegister::getInstance()->getDataConfig('Autoframe\Core\Date\AfrDate'));
 //print_r($oCfg->getConstants());
 echo GCCCCCX;
@@ -68,11 +150,10 @@ $oCookieManager->assumeAllHttpCookies();
 $oCookieManager->bAutoDomainDotNotationForAllSubdomains = true;
 $aCookies = $oCookieManager->getAllIndexes();
 print_r($aCookies);
-if(!empty($aCookies['sterse'])){
+if (!empty($aCookies['sterse'])) {
     $aCookies['sterse']->unset();
-}
-else{
-    $oCookie = new \Autoframe\Core\Http\Cookie\AfrHttpCookie('sterse','gvchgvjvg',time()+4444);
+} else {
+    $oCookie = new \Autoframe\Core\Http\Cookie\AfrHttpCookie('sterse', 'gvchgvjvg', time() + 4444);
     $oCookie->set();
     echo 'sss';
 }
@@ -81,12 +162,12 @@ else{
 die;
 
 
-$oEnt = new AfrEntityTest(['1'=>333333333,'aData'=>['pp'=>'fucking array data!'],'mMix'=>'American']);
+$oEnt = new AfrEntityTest(['1' => 333333333, 'aData' => ['pp' => 'fucking array data!'], 'mMix' => 'American']);
 $oEnt->iExtSet = '57.9';
 $oEnt->iNbrNew = 99;
-$oEnt->oGit=['Kx'=>'vy'];
-$oEnt->tDate='';
-$oEnt->mDateee=new stdClass();
+$oEnt->oGit = ['Kx' => 'vy'];
+$oEnt->tDate = '';
+$oEnt->mDateee = new stdClass();
 
 echo (string)$oEnt;
 
@@ -94,7 +175,7 @@ echo (string)$oEnt;
 echo "~~~\n";
 //print_r($oRefl->getProperty('sTexxxt')->getDefaultValue() );
 
-$oEntx = new AfrEntityTestx(['iId'=>7,'sPoveste'=>'Mexican']);
+$oEntx = new AfrEntityTestx(['iId' => 7, 'sPoveste' => 'Mexican']);
 echo "\n~~~\n";
 
 

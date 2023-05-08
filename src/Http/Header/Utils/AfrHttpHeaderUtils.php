@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Autoframe\Core\Http\Header\Utils;
 
-use Autoframe\Core\FileSystem\Mime\AfrFileMimeClass;
+use Autoframe\Components\FileMime\AfrFileMimeClass;
 
 trait AfrHttpHeaderUtils
 {
@@ -170,7 +170,7 @@ trait AfrHttpHeaderUtils
                     $sContentType .= '; charset=' . mb_detect_encoding($sBuffer, mb_list_encodings());
                 }
             } else {
-                $sContentType .= '; charset=utf-8';
+                $sContentType .= '; charset=utf-8'; //TODO in loc de charset sa pun binary sau sa verific charset pe server?
             }
         }
         header('Content-Type: ' . $sContentType);

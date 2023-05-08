@@ -1,8 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace Autoframe\Core\Object;
 
-use Autoframe\Core\Exception\AfrException;
+use Autoframe\Components\Exception\AfrException;
 use ReflectionException;
 
 interface AfrObjectSingletonInterface
@@ -23,14 +24,7 @@ interface AfrObjectSingletonInterface
      * @return object
      * @throws ReflectionException
      */
-    public static function newInstance(): object;
-
-    /**
-     * The method you use to get a new Singleton's instance from inline arguments.
-     * @return object
-     * @throws ReflectionException
-     */
-    public static function newInstanceArgs(): object;
+    public static function renewInstance(): object;
 
     /**
      * The method you use to get a new Singleton's instance from array arguments.
@@ -38,7 +32,7 @@ interface AfrObjectSingletonInterface
      * @return object
      * @throws ReflectionException
      */
-    public static function newInstanceArrayOfArgs(array $arguments): object;
+    public static function renewInstanceArrayOfArgs(array $arguments): object;
 
     /**
      * @return bool

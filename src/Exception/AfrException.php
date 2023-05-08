@@ -1,26 +1,12 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autoframe\Core\Exception;
-use Exception;
+use Autoframe\Components\Exception\AfrException as ComponentsAfrException;
 
-
-
-class AfrException extends Exception
+class AfrException extends ComponentsAfrException
 {
 
-    // Redefine the exception so message isn't optional
-    public function __construct($message, $code = 0, Throwable $previous = null) {
-        parent::__construct($message, $code, $previous);
-    }
-
-    // custom string representation of object
-    public function __toStringx() {
-        return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
-    }
-
-    public function customFunction() {
-        echo "A custom function for this type of exception\n";
-    }
 
 }

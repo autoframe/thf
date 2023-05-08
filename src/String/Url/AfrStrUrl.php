@@ -1,9 +1,9 @@
 <?php
-
+declare(strict_types=1);
 
 namespace Autoframe\Core\String\Url;
 
-use Autoframe\Core\Exception\AfrException;
+use Autoframe\Components\Exception\AfrException;
 use function parse_url;
 use function parse_str;
 use function rtrim;
@@ -42,7 +42,7 @@ class AfrStrUrl
     }
 
     /**
-     * @param $data
+     * @param string $data
      * @return false|string
      */
     public static function base64url_decode(string $data)

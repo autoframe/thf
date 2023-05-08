@@ -2,6 +2,7 @@
 
     "TODO_SCHEMA_ORG": "https://github.com/spatie/schema-org",
     "type": "library",
+    "version": "1.0.1",
     "localDEV": "composer dump-autoload -o",
     "name": "autoframe/core",
     "description": "Core Autoframe framework",
@@ -17,7 +18,12 @@
         "web-auth/cose-lib": "^3.3",
         "pragmarx/google2fa": "^8.0",
         "google/recaptcha": "^1.2",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "ext-sockets": "*",
+        "autoframe/components-exception": "^1.0",
+        "psr/container": "^2.0",
+        "autoframe/components-arr": "^1.0",
+        "autoframe/components-filemime": "^1.0"
     },
     "authors": [
         {

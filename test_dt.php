@@ -7,48 +7,59 @@ require_once(__DIR__ . '/vendor/autoload.php');
 require_once(__DIR__ . '/src/_demo_config.php');
 
 
-use Autoframe\Core\FileSystem\AfrFileSystemClass;
+echo dechex(0); die;
+
+use Autoframe\Core\FileSystem\AfrCollectionInterfaceSystemCollectionClass;
 use Autoframe\Core\Html\AfrBlackBody;
-use Autoframe\Core\Export\Php\AfrExportPhpArrClass;
+use Autoframe\Components\Arr\Export\AfrArrExportArrayAsStringClass;
 
-echo (new AfrFileSystemClass())->base64EncodeFile(__DIR__.'/composer.json'); die;
+//echo (new AfrFileSystemClass())->base64EncodeFile(__DIR__.'/composer.json'); die;
 
-
+$oClass = serialize(new stdClass());
 $aSet = [
     'aa' => 'Â',
     'a' => 'r\\\'',
-    'ca' => 'ă)',
+    '\ca' => 'ă)',
     'A' => 0.,
     'n30' => '0.0',
-    'n3' => 'Țg',
-    'n31' => '!d',
-    'cA' => -2.,
-    85 => '&',
-    'ș' => 'ț',
+    null => 'Țg',
+    'subA' =>[
+        'n31' => $oClass,
+        'cA' => -2.,
+        85 => null,
+        'ș' => 'ț',
+    ],
     'Ș' => '&',
     8 => '\\',
     71 => '%',
-    71.2 => '-2',
-    '70.2' => '-2.',
-    ';' => -22,
-    'â' => 'r',
+    ';' => -22.3,
     '#~' => 'R',
-    "\tTAB" => 'a\"a',
+    "\tTAB" => 'a\\"a',
     '#  ~' => 'Ă',
     7 => ".0",
+    '71.2'.PHP_EOL => '-2',
+    'â' => PHP_EOL.'r',
+
 ];
 
 $x = '';
 var_dump($aSet); echo "\n\n";
-echo serialize($aSet); echo "\n\n";
 
-$oExport = new AfrExportPhpArrClass();
-echo $oExport->exportPhpArrayAsString($aSet);
+$oExport = new AfrArrExportArrayAsStringClass();
+$sOut = $oExport->exportPhpArrayAsString($aSet);
+
+echo $sOut;
+
+echo "\n\n";
+echo serialize($aSet); echo "\n\n";
+$aData = [];
+eval($sOut);
+echo serialize($aData); echo "\n\n";
 die;
 
 new AfrBlackBody;
 
-$oDT = new AfrFileSystemClass();
+$oDT = new AfrCollectionInterfaceSystemCollectionClass();
 
 
 //echo $oDT->dirVersioningDirMtimeHash('x:/xampp/htdocs',false)."<br>\n";

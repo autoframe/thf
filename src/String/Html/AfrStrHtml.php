@@ -1,9 +1,9 @@
 <?php
-
+declare(strict_types=1);
 
 namespace Autoframe\Core\String\Html;
 
-use Autoframe\Core\Exception\AfrException;
+use Autoframe\Components\Exception\AfrException;
 use Autoframe\Core\String\AfrStr;
 
 use function filter_var;

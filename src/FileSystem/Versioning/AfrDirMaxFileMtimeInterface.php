@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Autoframe\Core\FileSystem\Versioning;
 
@@ -8,7 +9,7 @@ use Autoframe\Core\FileSystem\Versioning\Exception\AfrFileSystemVersioningExcept
 interface AfrDirMaxFileMtimeInterface
 {
     /**
-     * @param string|array $strOrArrPaths
+     * @param string|array $pathStringOrPathsArray
      * @param int $iMaxSubDirs
      * @param bool $bGetTsFromDirs
      * @param bool $bFollowSymlinks
@@ -16,5 +17,10 @@ interface AfrDirMaxFileMtimeInterface
      * @throws AfrFileSystemVersioningException
      * @throws AfrFileSystemDirPathException
      */
-    public function getDirMaxFileMtime($strOrArrPaths, int $iMaxSubDirs = 1, bool $bGetTsFromDirs = false, bool $bFollowSymlinks = false): int;
+    public function getDirMaxFileMtime(
+        $pathStringOrPathsArray,
+        int $iMaxSubDirs = 1,
+        bool $bFollowSymlinks = false,
+        bool $bGetTsFromDirs = false
+    ): int;
 }
