@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Autoframe\Core\String\Url;
 
 use Autoframe\Components\Exception\AfrException;
+use Autoframe\Components\FileMime\AfrFileMimeClass;
+
 use function parse_url;
 use function parse_str;
 use function rtrim;
@@ -18,7 +20,7 @@ use function file_get_contents;
 class AfrStrUrl
 {
     /**
-     * @param string $url 'https://www.youtube.com/watch?v=q1uVg13zDwM&gg=1'
+     * @param string $url
      * @return array
      * reverse:  http_build_query($array);
      */
@@ -60,12 +62,10 @@ class AfrStrUrl
      */
     public static function base64EncodeFile(string $sFullImagePath, string $fileType = 'image'): string
     {
-        $filetype = pathinfo($sFullImagePath)['extension'];
-        $binary = file_get_contents($sFullImagePath);
-        if (!$binary) {
-            throw new AfrException('Blank '.$fileType.' for base64 embed: ' . $sFullImagePath);
-        }
-        return 'data:' . $fileType . '/' . $filetype . ';base64,' . base64_encode($binary);
+        $sMime = (new AfrFileMimeClass())->getMimeFromFileName($sFullImagePath);
+        return 'data:' . $sMime. ';base64,' . base64_encode(file_get_contents($sFullImagePath));
     }
+
+
 
 }

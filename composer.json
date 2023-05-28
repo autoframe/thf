@@ -23,7 +23,13 @@
         "autoframe/components-exception": "^1.0",
         "psr/container": "^2.0",
         "autoframe/components-arr": "^1.0",
-        "autoframe/components-filemime": "^1.0"
+        "autoframe/components-filemime": "^1.0",
+        "autoframe/components-filesystem": "^1.0",
+        "mjaschen/phpgeo": "1.3",
+        "skyzyx/mimetypes": "^1.1",
+        "composer": "*",
+        "composer/class-map-generator": "^1.0",
+        "autoframe/class-dependency": "^1.0"
     },
     "authors": [
         {

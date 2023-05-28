@@ -53,6 +53,11 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/phpdoc-parser" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/autoframe/components-arr" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/autoframe/components-filemime" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/autoframe/components-filesystem" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/mjaschen/phpgeo" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/skyzyx/mimetypes" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/finder" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/autoframe/class-dependency" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -4,14 +4,13 @@ declare(strict_types=1);
 namespace Autoframe\Core\Captcha\Classic;
 
 
+use Autoframe\Components\FileSystem\Exception\AfrFileSystemException;
 use Autoframe\Core\Captcha\AfrCaptcha;
 use Autoframe\Components\Exception\AfrException;
-use Autoframe\Core\FileSystem\Exception\AfrFileSystemException;
-use Autoframe\Core\FileSystem\Traversing\Exception\AfrFileSystemTraversingException;
 use Autoframe\Core\Object\AfrObjectSingletonTrait;
 use Autoframe\Core\Session\AfrSessionFactory;
 use Autoframe\Core\Session\AfrSessionPhp;
-use Autoframe\Core\FileSystem\Traversing\AfrDirTraversingFileListTrait;
+use Autoframe\Components\FileSystem\Traversing\AfrDirTraversingFileListTrait;
 
 
 abstract class AfrCaptchaClassicImg extends AfrCaptcha
@@ -136,31 +135,11 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
      * @param string $sDirPath
      * @return array
      * @throws AfrFileSystemException
-     * @throws AfrFileSystemTraversingException
      */
     protected function getFontsFromDir(string $sDirPath ): array
     {
-        $aFiles = [];
         if (!$this->bImproveSpeed || !is_file($sDirPath . self::FONTCACHEFILE)) {
-            $aExtensions = ['.ttf'];
-            /*if (!is_dir($sDirPath)) {
-                return [];
-            }
-            $rDir = opendir($sDirPath);  //TODO de facut cu AfrDirPath operatile de directory
-            while ($sFileName = readdir($rDir)) {
-                $tf = $sDirPath . $sFileName;
-                if ($sFileName != '.' && $sFileName != '..' && is_file($tf) && is_readable($tf)) {
-                    foreach ($aExtensions as $filter) {
-                        if (substr(strtolower($sFileName), -strlen($filter)) == strtolower($filter)) {
-                            $aFiles[] = $sFileName;
-                            break;
-                        }
-                    }
-
-                }
-            }
-            closedir($rDir);*/
-            $aFiles = $this->getDirFileList($sDirPath,$aExtensions);
+            $aFiles = $this->getDirFileList($sDirPath,['.ttf']);
             natsort($aFiles);
             file_put_contents($sDirPath . self::FONTCACHEFILE, json_encode($aFiles));
         } else {
@@ -284,7 +263,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     {
         list($minLen, $maxLen, $v) = $this->codeLength();
         $password = '';
-        srand(ceil(microtime(true) * 1000000));
+        srand((int)ceil(microtime(true) * 1000000));
         $iLength = rand($minLen, $maxLen);
         if ($v === 2) {
             //            $possible = '23456789bcdfghkmnpqrsuvwxyz';

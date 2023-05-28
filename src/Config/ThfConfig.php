@@ -4,6 +4,8 @@ namespace Autoframe\Core\Config;
 
 
 //https://refactoring.guru/design-patterns/singleton/php/example#example-1
+use Autoframe\Core\Object\AfrObjectSingletonAbstractClass;
+
 /**
  * Applying the Singleton pattern to the configuration storage is also a common
  * practice. Often you need to access application configurations from a lot of
@@ -14,7 +16,8 @@ namespace Autoframe\Core\Config;
  * $config = Config::getInstance();
  * $config->setValue('DEBUG', 1);
  */
-class ThfConfig extends thfSingleton
+class ThfConfig extends AfrObjectSingletonAbstractClass
+//class ThfConfig extends thfSingleton
 {
     private $hashmap = ['DEBUG' => 1];
 

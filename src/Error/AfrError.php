@@ -42,7 +42,7 @@ class AfrError
     }
 }
 
-trigger_error('nive err', E_USER_NOTICE);
+//trigger_error('nive err', E_USER_NOTICE);
 
 function process_error_backtrace_general($errno, $errstr, $errfile, $errline, $errcontext,$args=false) {
     if(!(error_reporting() & $errno)) return;//$debug thorr

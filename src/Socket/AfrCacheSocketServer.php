@@ -11,9 +11,6 @@ class AfrCacheSocketServer extends AfrCacheSocketAbstract
     private string $sHearthBeatFile = __DIR__ . DIRECTORY_SEPARATOR . 'hearthBeat';
     protected array $aClients = [];
 
-
-
-
     /**
      * @return bool
      */

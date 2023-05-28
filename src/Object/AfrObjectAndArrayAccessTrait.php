@@ -74,6 +74,30 @@ trait AfrObjectAndArrayAccessTrait
     }
 
     /**
+     * Whether an offset exists
+     * @param string|int|float $offset
+     * @abstracting ArrayAccess
+     */
+    public function offsetExists($offset): bool
+    {
+        return isset($this->aData[$offset]);
+    }
+
+
+    /**
+     * Returns the value at specified offset
+     *
+     * @param string|int|float $offset
+     * @return mixed
+     * @abstracting ArrayAccess
+     */
+    #[\ReturnTypeWillChange]
+    public function offsetGet($offset)
+    {
+        return $this->offsetExists($offset) ? $this->aData[$offset] : null;
+    }
+
+    /**
      * Assigns a value to the specified offset
      * @param string $offset The offset to assign the value to
      * @param mixed $value The value to set
@@ -88,15 +112,7 @@ trait AfrObjectAndArrayAccessTrait
         }
     }
 
-    /**
-     * Whether an offset exists
-     * @param string|int|float $offset
-     * @abstracting ArrayAccess
-     */
-    public function offsetExists($offset): bool
-    {
-        return isset($this->aData[$offset]);
-    }
+
 
     /**
      * Unsets an offset
@@ -105,22 +121,12 @@ trait AfrObjectAndArrayAccessTrait
      * @access public
      * @abstracting ArrayAccess
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         if ($this->offsetExists($offset)) {
             unset($this->aData[$offset]);
         }
     }
 
-    /**
-     * Returns the value at specified offset
-     *
-     * @param string|int|float $offset
-     * @return mixed
-     * @abstracting ArrayAccess
-     */
-    public function offsetGet($offset)
-    {
-        return $this->offsetExists($offset) ? $this->aData[$offset] : null;
-    }
+
 }

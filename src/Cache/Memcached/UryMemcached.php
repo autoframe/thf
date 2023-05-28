@@ -207,7 +207,7 @@ class UryMemcached
 
 
 
-        $percCacheHit=((real)$status ["get_hits"]/ (real)$status ["cmd_get"] *100);
+        $percCacheHit=((float)$status ["get_hits"]/ (float)$status ["cmd_get"] *100);
 
         $percCacheHit=round($percCacheHit,3);
 
@@ -221,7 +221,7 @@ class UryMemcached
 
 
 
-        $MBRead= (real)$status["bytes_read"]/(1024*1024);
+        $MBRead= (float)$status["bytes_read"]/(1024*1024);
 
 
 
@@ -231,7 +231,7 @@ class UryMemcached
 
         echo "<tr><td>Total number of bytes sent by this server to network </td><td>".$MBWrite." Mega Bytes</td></tr>";
 
-        $MBSize=(real) $status["limit_maxbytes"]/(1024*1024) ;
+        $MBSize=(float) $status["limit_maxbytes"]/(1024*1024) ;
 
         echo "<tr><td>Number of bytes this server is allowed to use for storage.</td><td>".$MBSize." Mega Bytes</td></tr>";
 
@@ -245,19 +245,19 @@ class UryMemcached
 
     }
 
-    public function getMaxKeys():int
+    public function getMaxKeys()
     {
 
     }
 
-    private function calculateMaxKeys(int $iUpperLimit = 600):int
+    private function calculateMaxKeys(int $iUpperLimit = 600)
     {
-        for($i=1;$i<=1000*$iUpperLimit;$i++){
-            $this->set('k'.$i,'y',120);
+        for ($i = 1; $i <= 1000 * $iUpperLimit; $i++) {
+            $this->set('k' . $i, 'y', 120);
         }
         $iKeys = (int)$this->getAllKeys();
-        if($iKeys){
-            file_put_contents(__DIR__.DIRECTORY_SEPARATOR)
+        if ($iKeys) {
+            file_put_contents(__DIR__ . DIRECTORY_SEPARATOR);
         }
 
     }

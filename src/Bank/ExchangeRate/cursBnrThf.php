@@ -3,11 +3,6 @@ declare(strict_types=1);
 
 namespace Autoframe\Core\Bank\ExchangeRate;
 
-class Currency x
-{
-
-}
-
 
 //     $curs=new cursBnrThf(array('EUR','USD'));	//$curs->test();
 

@@ -59,6 +59,11 @@
       <path value="$PROJECT_DIR$/vendor/phpstan/phpdoc-parser" />
       <path value="$PROJECT_DIR$/vendor/autoframe/components-arr" />
       <path value="$PROJECT_DIR$/vendor/autoframe/components-filemime" />
+      <path value="$PROJECT_DIR$/vendor/autoframe/components-filesystem" />
+      <path value="$PROJECT_DIR$/vendor/mjaschen/phpgeo" />
+      <path value="$PROJECT_DIR$/vendor/skyzyx/mimetypes" />
+      <path value="$PROJECT_DIR$/vendor/symfony/finder" />
+      <path value="$PROJECT_DIR$/vendor/autoframe/class-dependency" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.4">

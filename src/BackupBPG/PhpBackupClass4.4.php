@@ -6,7 +6,7 @@ if (!defined('__DIR__')) {
 }
 
 
-class PhpBackupClass
+class PhpBackupClass44
 {
     var $sourceFolder;
     var $destinationFolder;

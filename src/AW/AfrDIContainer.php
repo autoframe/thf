@@ -1,6 +1,15 @@
 <?php
 declare(strict_types=1);
 
+//dependency injection  psr-11
+// PHP-DI
+//Service Containers
+//ServiceContainer AKA Dependency Injection Container
+// Create in PHP a class that can resolve concrete class names when
+// Using a PHP 7.4 and having composer available, please create a function or class that expects as a parameter a FQCN interface and that returns an array containing classes that implement that interface.
+// Using a PHP 7.4 and having composer available, please create a function that gets all the classes that can be autoloaded by composer.
+// Using a PHP 7.4 and having composer available, please create a function that gets all the classes that can be autoloaded by composer, by looping the vendor directory.
+
 namespace Autoframe\Core\AW;
 
 use Psr\Container\ContainerExceptionInterface;

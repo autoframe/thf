@@ -4,7 +4,7 @@ namespace Autoframe\Core\Log\ChangesInsertUpdate;
 
 class BpgLog
 {
-    function log_operations_x($table,$id_col_name,$id,$mode='i/u',$array,$exclude_from_logging=array('id')){
+    function log_operations_x($table,$id_col_name,$id,$mode,$array,$exclude_from_logging=array('id')){
         $id=floor($id);
         if($mode=='i'){
             foreach($array as $col=>$new_val){
