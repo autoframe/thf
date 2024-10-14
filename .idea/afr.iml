@@ -47,6 +47,17 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/paragonie/constant_time_encoding" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/pragmarx/google2fa" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/google/recaptcha" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/autoframe/components-exception" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/container" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/deprecations" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/phpdoc-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/autoframe/components-arr" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/autoframe/components-filemime" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/autoframe/components-filesystem" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/mjaschen/phpgeo" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/skyzyx/mimetypes" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/finder" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/autoframe/class-dependency" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

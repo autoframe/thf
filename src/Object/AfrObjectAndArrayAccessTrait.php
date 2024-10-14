@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autoframe\Core\Object;
@@ -17,84 +18,64 @@ namespace Autoframe\Core\Object;
  */
 trait AfrObjectAndArrayAccessTrait
 {
-    /**
-     * Data
-     *
-     * @var array
-     * @access private
-     */
     private array $aData = [];
 
     /**
      * Get a data by key
-     *
-     * @param string The key data to retrieve
-     * @access public
+     * @param string|int|float $key
+     * @return mixed
      */
     public function &__get($key)
     {
-        return $this->aData[$key];
+        return $this->aData[$this->__castToKey($key)];
     }
 
     /**
      * Assigns a value to the specified data
-     *
-     * @param string The data key to assign the value to
-     * @param mixed  The value to set
-     * @access public
+     * @param string|int|float $key
+     * @param $value
+     * @return void
      */
     public function __set($key, $value)
     {
-        $this->aData[$key] = $value;
+        $this->aData[$this->__castToKey($key)] = $value;
     }
 
     /**
-     * Whether or not an data exists by key
-     *
-     * @param string An data key to check for
-     * @access public
-     * @return boolean
+     * @param string|int|float $key
+     * @return string|int|float
+     */
+    private function __castToKey($key)
+    {
+        if(!is_string($key) || !is_numeric($key)){
+            return (string)$key;
+        }
+        return $key;
+    }
+
+    /**
+     * Whether a data exists by key
+     * @param string|int|float $key
+     * @return bool
      * @abstracting ArrayAccess
      */
     public function __isset($key): bool
     {
-        return isset($this->aData[$key]);
+        return isset($this->aData[$this->__castToKey($key)]);
     }
 
     /**
-     * Unsets an data by key
-     *
-     * @param string The key to unset
-     * @access public
+     * Unsets a data by key
+     * @param string|int|float $key
      */
     public function __unset($key)
     {
-        unset($this->aData[$key]);
+        unset($this->aData[$this->__castToKey($key)]);
     }
 
     /**
-     * Assigns a value to the specified offset
-     *
-     * @param string The offset to assign the value to
-     * @param mixed  The value to set
-     * @access public
-     * @abstracting ArrayAccess
-     */
-    public function offsetSet($offset, $value)
-    {
-        if (is_null($offset)) {
-            $this->aData[] = $value;
-        } else {
-            $this->aData[$offset] = $value;
-        }
-    }
-
-    /**
-     * Whether or not an offset exists
-     *
-     * @param string An offset to check for
-     * @access public
-     * @return boolean
+     * Whether an offset exists
+     * @param string|int|float $offset
      * @abstracting ArrayAccess
      */
     public function offsetExists($offset): bool
@@ -102,30 +83,50 @@ trait AfrObjectAndArrayAccessTrait
         return isset($this->aData[$offset]);
     }
 
+
+    /**
+     * Returns the value at specified offset
+     *
+     * @param string|int|float $offset
+     * @return mixed
+     * @abstracting ArrayAccess
+     */
+    #[\ReturnTypeWillChange]
+    public function offsetGet($offset)
+    {
+        return $this->offsetExists($offset) ? $this->aData[$offset] : null;
+    }
+
+    /**
+     * Assigns a value to the specified offset
+     * @param string $offset The offset to assign the value to
+     * @param mixed $value The value to set
+     * @abstracting ArrayAccess
+     */
+    public function offsetSet($offset, $value): void
+    {
+        if (is_null($offset)) {
+            $this->aData[] = $value;
+        } else {
+            $this->aData[$this->__castToKey($offset)] = $value;
+        }
+    }
+
+
+
     /**
      * Unsets an offset
      *
-     * @param string The offset to unset
+     * @param string|int|float $offset
      * @access public
      * @abstracting ArrayAccess
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         if ($this->offsetExists($offset)) {
             unset($this->aData[$offset]);
         }
     }
 
-    /**
-     * Returns the value at specified offset
-     *
-     * @param string The offset to retrieve
-     * @access public
-     * @return mixed
-     * @abstracting ArrayAccess
-     */
-    public function offsetGet($offset)
-    {
-        return $this->offsetExists($offset) ? $this->aData[$offset] : null;
-    }
+
 }

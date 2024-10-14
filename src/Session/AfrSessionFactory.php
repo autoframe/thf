@@ -33,26 +33,30 @@ class AfrSessionFactory extends AfrObjectAbstractSingletonFactory
 {
 
     protected static string $sDefaultNamespace = __NAMESPACE__;
-    const DEFAULT_NAMESPACE = 'AFR_SESSION_CLASS_DEFAULT_NAMESPACE';       // Autoframe\Core\Session
+    public const DEFAULT_NAMESPACE = 'AFR_SESSION_CLASS_DEFAULT_NAMESPACE';       // Autoframe\Core\Session
 
     protected static string $sDefaultClassName = 'AfrSessionPhp';
-    const DEFAULT_CLASS_NAME = 'AFR_SESSION_CLASS_DEFAULT_CLASS_NAME';     // AfrSessionPhp
+    public const DEFAULT_CLASS_NAME = 'AFR_SESSION_CLASS_DEFAULT_CLASS_NAME';     // AfrSessionPhp
 
-    const DEFAULT_PROFILE = 'AFR_SESSION_CLASS_DEFAULT_PROFILE';           // afr&nocache&cookie&subdomainsSession&iMinutes=302400&samesite=strict
-    const DEFAULT_PROFILES_ARR = 'AFR_SESSION_CLASS_DEFAULT_PROFILES_ARR'; // []
+    public const DEFAULT_PROFILE = 'AFR_SESSION_CLASS_DEFAULT_PROFILE';           // afr&nocache&cookie&subdomainsSession&iMinutes=302400&samesite=strict
+    public const DEFAULT_PROFILES_ARR = 'AFR_SESSION_CLASS_DEFAULT_PROFILES_ARR'; // []
 
-    const DEFAULT_CAPTCHA_PROFILE = 'AFR_SESSION_CLASS_DEFAULT_CAPTCHA_PROFILE';           // captcha
-    const DEFAULT_CAPTCHA_PROFILES_ARR = 'AFR_SESSION_CLASS_DEFAULT_CAPTCHA_PROFILES_ARR'; // []
+    public const DEFAULT_CAPTCHA_PROFILE = 'AFR_SESSION_CLASS_DEFAULT_CAPTCHA_PROFILE';           // captcha
+    public const DEFAULT_CAPTCHA_PROFILES_ARR = 'AFR_SESSION_CLASS_DEFAULT_CAPTCHA_PROFILES_ARR'; // []
 
 
-    const SELECTED_PROFILE = 'sSelectedProfile';
+    public const SELECTED_PROFILE = 'sSelectedProfile';
 
     protected static function customConstruct()
     {
 
     }
 
-    final static public function getInstance(): object
+    /**
+     * @return object
+     * @throws \Autoframe\Core\Exception\AfrException
+     */
+    final public static function getInstance(): object
     {
         /** @var AfrSessionPhp $oInstance */
         $oInstance = parent::getInstance();
@@ -77,6 +81,11 @@ class AfrSessionFactory extends AfrObjectAbstractSingletonFactory
         return $oInstance;
     }
 
+    /**
+     * @param string $sProfile
+     * @param bool $bSetAsSelected
+     * @return array
+     */
     private static function loadFrameworkProfiles(string $sProfile = '', bool $bSetAsSelected = false): array
     {
         $aFrameworkProfiles = $aProfile = [];
@@ -191,6 +200,11 @@ class AfrSessionFactory extends AfrObjectAbstractSingletonFactory
         return $aFrameworkProfiles;
     }
 
+    /**
+     * @param array $aOriginal
+     * @param array $aNew
+     * @return array
+     */
     public static function mergeSettings(array $aOriginal, array $aNew): array
     {
         foreach ($aNew as $sNewKey => $mNewProfile) {

@@ -12,7 +12,7 @@ define('AUTOLOAD_CLASSES', serialize( array(THF_CLASSES,THF_CLASSES_BLADE,APP_CL
 define('AUTOLOAD_VENDOR_NS_PSR4', serialize( array(DIR.DS.'vendor') ) );
 
 
-function prea($in){echo '<pre>'.@htmlentities(print_r($in,true), ENT_QUOTES | ENT_IGNORE,'UTF-8').'</pre>';}
+function prea($in){echo '<pre>'.htmlentities(print_r($in,true), ENT_QUOTES | ENT_IGNORE,'UTF-8').'</pre>';}
 
 
 $__modulesList=function(){

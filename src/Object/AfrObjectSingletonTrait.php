@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autoframe\Core\Object;
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Components\Exception\AfrException;
 use ReflectionClass;
 use ReflectionException;
 use function func_get_args;
@@ -28,26 +29,25 @@ trait AfrObjectSingletonTrait
 
     /**
      * Cloning and unserialization are not permitted for singletons.
-     * @throws Exception
+     * @throws AfrException
      */
     protected function __clone()
     {
-        throw new Exception("Cannot clone a singleton");
+        throw new AfrException('Cannot clone a singleton');
     }
 
     /**
-     * @throws Exception
+     * @throws AfrException
      */
     public function __wakeup()
     {
-        throw new Exception("Cannot unserialize singleton");
+        throw new AfrException("Cannot unserialize singleton");
     }
 
 
     /**
      * The method you use to get the Singleton's instance.
-     * @return object
-     * @throws ReflectionException
+     * @return self
      */
     public static function getInstance(): object
     {
@@ -58,50 +58,39 @@ trait AfrObjectSingletonTrait
             // of the current class". That detail is important because when the
             // method is called on the subclass, we want an instance of that
             // subclass to be created here.
-            $arguments = func_get_args();
-
-            if ($arguments) {
-                return self::newInstanceArrayOfArgs($arguments);
-            } else {
-                return self::$instances[$subclass] = new static();
-            }
+            return self::$instances[$subclass] = new static();
+            // TODO adaugat aici apply afr config daca este instanta de interfata sau trait sau clasa configurabila
         }
         return self::$instances[$subclass];
     }
 
     /**
-     * The method you use to get a new Singleton's instance.
+     * The method you use to get a new clean Singleton's instance.
      * @return object
      * @throws ReflectionException
      */
-    public static function newInstance(): object
+    public static function renewInstance(): object
     {
         $arguments = func_get_args();
-        if ($arguments) {
-            return self::newInstanceArrayOfArgs($arguments);
+        if (!empty($arguments)) {
+            return self::renewInstanceArrayOfArgs($arguments);
         } else {
-            return self::$instances[ static::class ] = new static();
+            return self::$instances[static::class] = new static();
         }
     }
 
     /**
-     * The method you use to get a new Singleton's instance from inline arguments.
-     * @return object
+     * The method you use to get a new Singleton's instance from an array of arguments.
+     * @param array $arguments
+     * @return self
      * @throws ReflectionException
      */
-    public static function newInstanceArgs(): object
-    {
-        return self::newInstanceArrayOfArgs(func_get_args());
-    }
-
-    /**
-     * The method you use to get a new Singleton's instance from array arguments.
-     * @return object
-     * @throws ReflectionException
-     */
-    public static function newInstanceArrayOfArgs(array $arguments): object
+    public static function renewInstanceArrayOfArgs(array $arguments): object
     {
         $subclass = static::class;
+        if(empty($arguments)){
+            return self::renewInstance();
+        }
         return self::$instances[$subclass] =
             (new ReflectionClass($subclass))->newInstanceArgs($arguments);
     }

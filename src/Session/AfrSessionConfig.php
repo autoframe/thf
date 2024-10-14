@@ -2,8 +2,10 @@
 
 
 namespace Autoframe\Core\Session;
-
-
+//TODO FIX!!!!!!!!!!!
+//ini_set('session.cookie_samesite', 'None');
+//ini_set('session.cookie_secure', 'On');
+//ini_set('session.cookie_httponly', 'On');
 
 trait AfrSessionConfig
 {

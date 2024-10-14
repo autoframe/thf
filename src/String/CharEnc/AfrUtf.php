@@ -83,7 +83,7 @@ class AfrUtf
      */
     public static function utfToArray(string $utfStr): array
     {
-        $chars = array();
+        $chars = [];
         $pointer = 0;
         while (($chr = self::nextChar($utfStr, $pointer)) !== false) {
             $chars[] = $chr;

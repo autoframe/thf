@@ -1,9 +1,11 @@
 <?php
-
+declare(strict_types=1);
 
 namespace Autoframe\Core\String\Url;
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Components\Exception\AfrException;
+use Autoframe\Components\FileMime\AfrFileMimeClass;
+
 use function parse_url;
 use function parse_str;
 use function rtrim;
@@ -18,7 +20,7 @@ use function file_get_contents;
 class AfrStrUrl
 {
     /**
-     * @param string $url 'https://www.youtube.com/watch?v=q1uVg13zDwM&gg=1'
+     * @param string $url
      * @return array
      * reverse:  http_build_query($array);
      */
@@ -42,30 +44,28 @@ class AfrStrUrl
     }
 
     /**
-     * @param $data
+     * @param string $data
      * @return false|string
      */
     public static function base64url_decode(string $data)
     {
-        return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+        return base64_decode( strtr( $data, '-_', '+/') . str_repeat('=', 3 - ( 3 + strlen( $data )) % 4 ));
     }
 
     /**
      * @param string $sFullImagePath
      * @param string $fileType
      * @return string
-     * @throws Exception
+     * @throws AfrException
      * CSS: .logo {background: url("<?php echo base64_encode_image ('img/logo.png','png'); ?>") no-repeat; }
      * <img src="<?php echo base64EncodeFile ('img/logo.png','image'); ?>"/>
      */
     public static function base64EncodeFile(string $sFullImagePath, string $fileType = 'image'): string
     {
-        $filetype = pathinfo($sFullImagePath)['extension'];
-        $binary = file_get_contents($sFullImagePath);
-        if (!$binary) {
-            throw new Exception('Blank '.$fileType.' for base64 embed: ' . $sFullImagePath);
-        }
-        return 'data:' . $fileType . '/' . $filetype . ';base64,' . base64_encode($binary);
+        $sMime = (new AfrFileMimeClass())->getMimeFromFileName($sFullImagePath);
+        return 'data:' . $sMime. ';base64,' . base64_encode(file_get_contents($sFullImagePath));
     }
+
+
 
 }

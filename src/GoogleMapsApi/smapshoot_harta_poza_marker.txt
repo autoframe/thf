@@ -1,0 +1,2 @@
+https://maps.googleapis.com/maps/api/staticmap?center=44.4944619,26.0738959&zoom=15&size=640x360&sensor=false&scale=2&format=jpg&key=AIzaSyCtbKHk4oagAUs3cBnK-jXM21bywMxzYbY&markers=scale:2|icon:http://harta.imobiliare.ro/imagini/marker-casa-googlemaps.png|color:red|label:|44.4944619,26.0738959
+https://developers.google.com/maps/documentation/maps-static/overview

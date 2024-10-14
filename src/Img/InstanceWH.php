@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autoframe\Core\Img;
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Components\Exception\AfrException;
 
 trait InstanceWH
 {
@@ -45,7 +46,7 @@ trait InstanceWH
         if (isset($this->iImgHeight)) {
             return $this->iImgHeight;
         }
-        throw new Exception('ImgHeight is not set');
+        throw new AfrException('ImgHeight is not set');
     }
 
     function setImgWidth(int $iImgWidth)
@@ -58,7 +59,7 @@ trait InstanceWH
         if (isset($this->iImgWidth)) {
             return $this->iImgWidth;
         }
-        throw new Exception('ImgWidth is not set');
+        throw new AfrException('ImgWidth is not set');
     }
 
 }

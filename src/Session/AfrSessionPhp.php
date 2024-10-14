@@ -1,10 +1,9 @@
 <?php
-
+declare(strict_types=1);
 
 namespace Autoframe\Core\Session;
 
-
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Components\Exception\AfrException;
 use Autoframe\Core\Object\AfrObjectSingletonTrait;
 use function headers_sent;
 use function is_callable;
@@ -284,6 +283,7 @@ class AfrSessionPhp implements AfrSessionInterface
     }
 
     /**
+     * TODO CHECK predefined parameter types
      * @param int|array $lifetime_or_options
      * @param string|null $path
      * @param string|null $domain
@@ -291,11 +291,11 @@ class AfrSessionPhp implements AfrSessionInterface
      * @param bool|null $httponly
      * @param string|null $samesite
      * @return bool
-     * @throws Exception
+     * @throws AfrException
      * Alternative signature available as of PHP 7.3.0: session_set_cookie_params(array $lifetime_or_options): bool
      */
     function session_set_cookie_params($lifetime_or_options,
-                                       ?string $path = null,
+                                       ?string $path = null, //TODO CHECK predefined parameter types
                                        ?string $domain = null,
                                        ?bool $secure = null,
                                        ?bool $httponly = null,
@@ -304,7 +304,7 @@ class AfrSessionPhp implements AfrSessionInterface
     ): bool
     {
         if ($samesite && !in_array(strtolower($samesite), ['lax', 'strict'])) {
-            throw new Exception('Samesite policy must be Lax or Strict, (' . $samesite . ') given!');
+            throw new AfrException('Samesite policy must be Lax or Strict, (' . $samesite . ') given!');
         }
         if (PHP_VERSION_ID < 70300) {
             if (!$path) {
@@ -312,7 +312,7 @@ class AfrSessionPhp implements AfrSessionInterface
             }
             return session_set_cookie_params(
                 (int)$lifetime_or_options,
-                $path . '; samesite=' . $samesite,
+                $path . ($samesite ? '; samesite=' . $samesite : ''),
                 $domain,
                 $secure,
                 $httponly
@@ -341,7 +341,7 @@ class AfrSessionPhp implements AfrSessionInterface
      * @param null $validate_sid
      * @param null $update_timestamp
      * @return bool
-     * @throws Exception
+     * @throws AfrException
      * https://www.php.net/manual/en/function.session-set-save-handler.php
      */
     function session_set_save_handler($sessionhandler_or_open,
@@ -380,14 +380,14 @@ class AfrSessionPhp implements AfrSessionInterface
         } elseif (is_object($sessionhandler_or_open) && is_bool($register_shutdown_or_close)) {
             return session_set_save_handler($sessionhandler_or_open, $register_shutdown_or_close);
         } else {
-            throw new Exception('Invalid arguments supplied to session_set_save_handler()');
+            throw new AfrException('Invalid arguments supplied to session_set_save_handler()');
         }
     }
 
     /**
      * @param array $options https://www.php.net/manual/en/session.configuration.php
      * @return bool
-     * @throws Exception
+     * @throws AfrException
      * To use a named session, call session_name() before calling session_start().
      * When session.use_trans_sid is enabled, the session_start() function will register an internal output handler for URL rewriting.
      * https://www.php.net/manual/en/session.configuration.php
@@ -402,7 +402,7 @@ class AfrSessionPhp implements AfrSessionInterface
             return false;
         }
         if (headers_sent($filename, $linenum) === true) {
-            throw new Exception(
+            throw new AfrException(
                 'Warning: ' . __CLASS__ . '->' . __FUNCTION__ . ': ' .
                 'Cannot send session cache limiter - ' .
                 "Headers already sent in $filename on line $linenum\n"

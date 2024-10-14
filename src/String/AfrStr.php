@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Autoframe\Core\String;
 
@@ -40,7 +41,7 @@ class AfrStr
 
     /**
      * @param string $str
-     * @param string $bSingleQuotEncapsulation
+     * @param bool $bSingleQuotEncapsulation
      * @return string
      */
     static function q(string $str, bool $bSingleQuotEncapsulation = true): string
@@ -90,7 +91,7 @@ class AfrStr
                 $val = self::h($val, $sEncoding);
             }
         } elseif (is_string($saData)) {
-            $saData = @htmlentities($saData, self::$iFlagsHtmlentities, $sEncoding);
+            $saData = htmlentities($saData, self::$iFlagsHtmlentities, $sEncoding);
         }
         return $saData;
     }
@@ -264,27 +265,6 @@ class AfrStr
     public static function getClassBasename(string $class): string
     {
         return join('', array_slice(explode("\\", $class), -1, 1));
-    }
-
-    /**
-     * @param array $aOriginal
-     * @param array $aNew
-     * @return array
-     */
-    public static function array_merge_recursive_settings(array $aOriginal, array $aNew): array
-    {
-        foreach ($aNew as $sNewKey => $mNewProfile) {
-            if (!isset($aOriginal[$sNewKey])){
-                $aOriginal[$sNewKey] = $mNewProfile;
-            }
-            elseif (is_array($aOriginal[$sNewKey]) && is_array($mNewProfile)) {
-                $aOriginal[$sNewKey] = self::array_merge_recursive_settings($aOriginal[$sNewKey], $mNewProfile);
-            }
-            else{
-                $aOriginal[$sNewKey] = $mNewProfile;
-            }
-        }
-        return $aOriginal;
     }
 
 

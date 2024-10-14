@@ -1,10 +1,11 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autoframe\Core\Object;
 
 
-use Autoframe\Core\Exception\Exception;
+use Autoframe\Components\Exception\AfrException;
 use Autoframe\Core\String\AfrStr;
 
 use function constant;
@@ -30,7 +31,7 @@ abstract class AfrObjectAbstractConstructorSingletonFactory
     abstract protected function customConstruct();
 
     /**
-     * @throws Exception
+     * @throws AfrException
      */
     final function __construct(string $sClassName = '', string $sNamespace = '', bool $forceClassReinitialisation = false)
     {
@@ -96,12 +97,12 @@ abstract class AfrObjectAbstractConstructorSingletonFactory
     /**
      * @param string $sClassName
      * @return string
-     * @throws Exception
+     * @throws AfrException
      */
     final public function setClassName(string $sClassName): string
     {
         if (!$sClassName) {
-            throw new Exception('Expected valid class name parameter for ' . __CLASS__ . '->setClassName');
+            throw new AfrException('Expected valid class name parameter for ' . __CLASS__ . '->setClassName');
         }
 
         return static::$sClassName = $sClassName;

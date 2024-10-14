@@ -1,20 +1,23 @@
 <?php
+declare(strict_types=1);
 
 namespace Autoframe\Core\Captcha\Classic;
 
 
+use Autoframe\Components\FileSystem\Exception\AfrFileSystemException;
 use Autoframe\Core\Captcha\AfrCaptcha;
-use Autoframe\Core\Exception\Exception;
-use Autoframe\Core\Image\AfrImageCaptchaTrait;
+use Autoframe\Components\Exception\AfrException;
 use Autoframe\Core\Object\AfrObjectSingletonTrait;
 use Autoframe\Core\Session\AfrSessionFactory;
 use Autoframe\Core\Session\AfrSessionPhp;
+use Autoframe\Components\FileSystem\Traversing\AfrDirTraversingFileListTrait;
 
 
 abstract class AfrCaptchaClassicImg extends AfrCaptcha
 {
     use AfrObjectSingletonTrait;
-    use AfrImageCaptchaTrait;
+    use AfrCaptchaClassicTrait;
+    use AfrDirTraversingFileListTrait;
 
     const FONTFACTORSPLIT = '_ff';
     const FONTCACHEFILE = '_cache.json';
@@ -38,7 +41,6 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     protected int $iMaxTextAngle = 17;
     protected int $iFormat = 2;
 
-    protected string $sFontFile = '';
     private array $aFonts = [];
     protected string $sFontsDir = __DIR__ . DIRECTORY_SEPARATOR . 'Fonts' . DIRECTORY_SEPARATOR;
 
@@ -114,7 +116,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     function imgVersion(): int
     {
         if (empty($this->ImgVersion)) {
-            throw new Exception('Invalid image version configured in class ' . __CLASS__ . '!');
+            throw new AfrException('Invalid image version configured in class ' . __CLASS__ . '!');
         }
         return $this->ImgVersion;
     }
@@ -124,33 +126,20 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     {
         $aFonts = $this->getFontsFromDir($this->sFontsDir);
         if (!$aFonts) {
-            throw new Exception('No font files found for Captcha render!');
+            throw new AfrException('No font files found for Captcha render!');
         }
         return $aFonts;
     }
 
-    protected function getFontsFromDir(string $sDirPath, array $aExtensions = ['.ttf']): array
+    /**
+     * @param string $sDirPath
+     * @return array
+     * @throws AfrFileSystemException
+     */
+    protected function getFontsFromDir(string $sDirPath ): array
     {
-        $aFiles = [];
-        if (!is_dir($sDirPath) || count($aExtensions) < 1) {
-            return $aFiles;
-        }
-
         if (!$this->bImproveSpeed || !is_file($sDirPath . self::FONTCACHEFILE)) {
-            $rDir = opendir($sDirPath);
-            while ($sFileName = readdir($rDir)) {
-                $tf = $sDirPath . $sFileName;
-                if ($sFileName != '.' && $sFileName != '..' && is_file($tf) && is_readable($tf)) {
-                    foreach ($aExtensions as $filter) {
-                        if (substr(strtolower($sFileName), -strlen($filter)) == strtolower($filter)) {
-                            $aFiles[] = $sFileName;
-                            break;
-                        }
-                    }
-
-                }
-            }
-            closedir($rDir);
+            $aFiles = $this->getDirFileList($sDirPath,['.ttf']);
             natsort($aFiles);
             file_put_contents($sDirPath . self::FONTCACHEFILE, json_encode($aFiles));
         } else {
@@ -159,10 +148,10 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
         return $aFiles;
     }
 
-    protected function setFont(int $iCodeLength, string $sFontFile = ''): string
+    protected function setCaptchaFont(int $iCodeLength, string $sFontFile = ''): string
     {
         $aFonts = $this->getFonts();
-        $this->sFontFile = $this->sFontsDir . $aFonts[array_rand($aFonts)];
+        $this->setFont($this->sFontsDir . $aFonts[array_rand($aFonts)]);
         if ($sFontFile) {
             foreach ($aFonts as $sFontName) {
                 if (strpos($sFontName, $sFontFile) !== false) {
@@ -213,7 +202,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
         $session = AfrSessionFactory::getInstance();
         if (!$session->session_started()) {
             if (!$session->session_start()) {
-                throw new Exception('Session could not be started!');
+                throw new AfrException('Session could not be started!');
             }
         }
         return true;
@@ -231,7 +220,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     public function newCaptchaResource(bool $bExitAfterFlush = true): void
     {
         $sCode = $this->prepareCode();
-        $this->setFont(strlen($sCode));
+        $this->setCaptchaFont(strlen($sCode));
         $this->createImage($sCode);
         $this->flushImage($sCode);
         if ($bExitAfterFlush) {
@@ -244,7 +233,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     private function flushImage(string $sCode)
     {
         if (headers_sent()) {
-            throw new Exception('Image print error because headers are already sent!');
+            throw new AfrException('Image print error because headers are already sent!');
         }
         header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
         header('Pragma: no-cache');
@@ -274,7 +263,7 @@ abstract class AfrCaptchaClassicImg extends AfrCaptcha
     {
         list($minLen, $maxLen, $v) = $this->codeLength();
         $password = '';
-        srand((double)microtime() * 1000000);
+        srand((int)ceil(microtime(true) * 1000000));
         $iLength = rand($minLen, $maxLen);
         if ($v === 2) {
             //            $possible = '23456789bcdfghkmnpqrsuvwxyz';
